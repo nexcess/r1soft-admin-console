@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}CDP Hosts{% endblock %}
+{% block content %}
+    <div class="page-header">
+        <h1>CDP Hosts</h1>
+    </div>
+    <div class="btn-group">
+        {% for host in hosts %}
+        <li><a href="{{ url_for('show_host', host_id=host.id) }}">{{ host.hostname }}</a></li>
+        {% endfor %}
+    </div>
+{% endblock %}

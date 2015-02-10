@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}CDP Host{% endblock %}
+{% block content %}
+    <ul>
+        {% for client in clients %}
+        <li>{{ client.hostname }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
