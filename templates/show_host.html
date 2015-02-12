@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-md-12 well">
             <table class="table">
-                <tbody id="server-info-table">
+                <tbody>
                     <tr>
                         <td>Server Version</td>
                         <td>{{ host_lic_info.version or 'UNKNOWN'}}</td>
@@ -63,10 +63,13 @@
             </table>
         </div>
     </div>
-    <h2 id="clients-list">Clients</h2>
+    <h2>
+        Agents
+        <input id="agents-filter-input" class="pull-right" type="text" placeholder="Search..." data-column="2,3">
+    </h2>
     <div class="row">
         <div class="col-md-12">
-            <table class="table">
+            <table id="agents-list-table" class="table">
                 <thead>
                     <tr>
                         <th>Type</th>
@@ -76,7 +79,7 @@
                         <th>DB Addon Enabled</th>
                     </tr>
                 </thead>
-                <tbody id="clients-list-table">
+                <tbody>
                 {% for client in clients %}
                     <tr>
                         <td>
@@ -86,8 +89,8 @@
                             <i title="{{ client.osType }}" class="fa fa-question-circle fa-lg"></i>
                             {% endif %}
                         </td>
-                        <td class="clients-list-hostname"><a href="{{ url_for('show_client', host_id=host.id, client_uuid=client.id) }}">{{ client.hostname }}</a></td>
-                        <td class="clients-list-description">{{ client.description }}</td>
+                        <td><a href="{{ url_for('show_client', host_id=host.id, client_uuid=client.id) }}">{{ client.hostname }}</a></td>
+                        <td>{{ client.description }}</td>
                         <td>{{ client.lastKnownAgentVersion }}</td>
                         <td>
                             {% if client.databaseAddOnEnabled %}
@@ -104,9 +107,18 @@
     </div>
 {% endblock %}
 {% block customjs %}
+<script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
+<script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
     $(function () {
-        addCollectionFilter($("#clients-list"), $("#clients-list-table"), "tr>td.clients-list-hostname")
-    })
+        var table = $("#agents-list-table").tablesorter({
+            sortList: [[1,0], [2,0]],
+            widgets: ["filter"],
+            widgetOptions: {
+                filter_external: $("#agents-filter-input"),
+                filter_columnFilters: false,
+            }
+        })
+    });
 </script>
 {% endblock %}

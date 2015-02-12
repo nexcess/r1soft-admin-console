@@ -23,9 +23,10 @@
  */
 
 // custom css expression for a case-insensitive contains()
-jQuery.expr[':'].Contains = function(a,i,m){
-    return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase())>=0;
-};
+
+// jQuery.expr[':'].Contains = function(a,i,m){
+//     return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase())>=0;
+// };
 
 function addCollectionFilter(attach_point, collection, filter_item) {
     // header is any element, list is an unordered list

@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
 {% block title %}CDP Host{% endblock %}
 {% block content %}
-    <h2 id="agents-list">Agents</h2>
+    <h2>
+        Agents
+        <input type="text" id="agents-filter-input" class="pull-right" placeholder="Search..." data-column="2,3,4">
+    </h2>
     <div class="row">
         <div class="col-md-9">
-            <table class="table">
+            <table id="agents-list-table" class="table">
                 <thead>
                     <tr>
                         <th>Type</th>
@@ -16,7 +19,7 @@
                         <th>State</th>
                     </tr>
                 </thead>
-                <tbody id="agents-list-table">
+                <tbody>
                 </tbody>
             </table>
         </div>
@@ -34,82 +37,94 @@
     </div>
 {% endblock %}
 {% block customjs %}
+<script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
+<script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
-    /*
     var hosts = [
     {% for host in NAV_hosts %}
         {
             id: {{ host.id }},
             hostname: "{{ host.hostname }}",
-            external_link: "{{ host.external_link }}"
+            url_external_link: "{{ host.external_link }}",
+            url_list_clients_json: "{{ url_for('list_clients_json', host_id=host.id) }}"
         },
     {% endfor %}
     ];
-    */
-    {% for host in NAV_hosts %}
-    var jqxhr = $.getJSON("{{ url_for('list_clients_json', host_id=host.id) }}",
-        function(response_data) {
-            $.each(response_data, function(policy_id, data) {
-                if(!data.agent) {
-                    $("#host-group-item-{{ host.id }}").addClass("list-group-item-warning");
-                    return;
-                }
-                var row = $("<tr>").attr({id: policy_id}),
-                    type = $("<td>"),
-                    hostname = $("<td>").text(data.agent.hostname).attr({class: "agents-list-hostname"}),
-                    description = $("<td>").text(data.agent.description),
-                    cdp_host = $("<td>").html("<a href=\"{{ host.external_link }}\">{{ host.hostname }}</a>"),
-                    rp_limit = $("<td>").text(data.policy.recoveryPointLimit),
-                    db_module = $("<td>"),
-                    state = $("<td>").text(data.policy.state);
-                if(data.agent.databaseAddOnEnabled &&
-                        data.policy.databaseInstanceList &&
-                        data.policy.databaseInstanceList.length > 0) {
-                    db_module.html("<span class=\"label label-success\">Yes</span>");
-                } else {
-                    db_module.html("<span class=\"label label-danger\">No</span>");
-                }
-                switch(data.agent.osType) {
-                    case "LINUX":
-                        $(type).append($("<i>").attr({title: data.agent.osType,
-                            class: "fa fa -lg fa-linux"}));
-                        break;
-                    default:
-                        $(type).append($("<i>").attr({title: data.agent.osType,
-                            class: "fa fa -lg fa-question-circle"}));
-                }
-                switch(data.policy.state) {
-                    case "ERROR":
-                        $(row).attr({class: "danger"});
-                        break;
-                    case "ALERT":
-                        $(row).attr({class: "warning"});
-                        break;
-                    case "OK":
-                        $(row).attr({class: "success"});
-                        break;
-                }
-                if(!data.policy.enabled) {
-                    $(row.attr({class: "default"}));
-                }
 
-                $.each([type, hostname, description, cdp_host, rp_limit, db_module, state],
-                    function(i, v) {
-                        $(row).append(v);
-                    });
-                $(row).appendTo($("#agents-list-table"));
-            });
+    $.each(hosts, function(idx, host) {
+        $.getJSON(host.url_list_clients_json,
+            function(response_data) {
+                $.each(response_data, function(policy_id, data) {
+                    if(!data.agent) {
+                        $("#host-group-item-"+host.id).addClass("list-group-item-warning");
+                        return;
+                    }
+                    var row = $("<tr>").attr({id: policy_id}),
+                        type = $("<td>"),
+                        hostname = $("<td>").text(data.agent.hostname),
+                        description = $("<td>").text(data.agent.description),
+                        cdp_host = $("<td>").html("<a href=\""+host.external_link+"\">"+host.hostname+"</a>"),
+                        rp_limit = $("<td>").text(data.policy.recoveryPointLimit),
+                        db_module = $("<td>"),
+                        state = $("<td>").text(data.policy.state);
+                    if(data.agent.databaseAddOnEnabled &&
+                            data.policy.databaseInstanceList &&
+                            data.policy.databaseInstanceList.length > 0) {
+                        db_module.html("<span class=\"label label-success\">Yes</span>");
+                    } else {
+                        db_module.html("<span class=\"label label-danger\">No</span>");
+                    }
+                    switch(data.agent.osType) {
+                        case "LINUX":
+                            $(type).append($("<i>").attr({title: data.agent.osType,
+                                class: "fa fa -lg fa-linux"}));
+                            break;
+                        default:
+                            $(type).append($("<i>").attr({title: data.agent.osType,
+                                class: "fa fa -lg fa-question-circle"}));
+                    }
+                    switch(data.policy.state) {
+                        case "ERROR":
+                            $(row).attr({class: "danger"});
+                            break;
+                        case "ALERT":
+                            $(row).attr({class: "warning"});
+                            break;
+                        case "OK":
+                            $(row).attr({class: "success"});
+                            break;
+                    }
+                    if(!data.policy.enabled) {
+                        $(row.attr({class: "default"}));
+                    }
 
-            $("#host-group-item-{{ host.id }}").addClass("list-group-item-success");
-        }
-    ).fail(function() {
-        $("#host-group-item-{{ host.id }}").addClass("list-group-item-danger");
-    }).always(function() {
-        $("#host-spinner-{{ host.id }}").hide();
+                    $.each([type, hostname, description, cdp_host, rp_limit, db_module, state],
+                        function(i, v) {
+                            $(row).append(v);
+                        });
+                    $(row).appendTo($("#agents-list-table"));
+                });
+
+                $("#host-group-item-"+host.id).addClass("list-group-item-success");
+                $("#agents-list-table").trigger("update");
+            }
+        ).fail(function() {
+            $("#host-group-item-"+host.id).addClass("list-group-item-danger");
+        }).always(function() {
+            $("#host-spinner-"+host.id).hide();
+        });
+
     });
-    {% endfor %}
-    $(function () {
-        addCollectionFilter($("#agents-list"), $("#agents-list-table"), "tr>td.agents-list-hostname")
-    })
+
+    $(function() {
+        var table = $("#agents-list-table").tablesorter({
+            sortList: [[1,0],[2,0]],
+            widgets: ["filter"],
+            widgetOptions: {
+                filter_external: $("#agents-filter-input"),
+                filter_columnFilters: false,
+            }
+        })
+    });
 </script>
 {% endblock %}
