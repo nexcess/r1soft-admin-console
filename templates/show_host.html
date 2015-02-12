@@ -6,9 +6,9 @@
     </div>
     <h2>Server Information</h2>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12 well">
             <table class="table">
-                <tbody id="clients-list-table">
+                <tbody id="server-info-table">
                     <tr>
                         <td>Server Version</td>
                         <td>{{ host_lic_info.version or 'UNKNOWN'}}</td>
@@ -59,14 +59,6 @@
                             </div>
                         </td>
                     </tr>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                    </tr>
                 </tbody>
             </table>
         </div>
@@ -114,7 +106,7 @@
 {% block customjs %}
 <script>
     $(function () {
-        listFilter($("#clients-list"), $("#clients-list-table"), "tr>td.clients-list-hostname")
+        addCollectionFilter($("#clients-list"), $("#clients-list-table"), "tr>td.clients-list-hostname")
     })
 </script>
 {% endblock %}

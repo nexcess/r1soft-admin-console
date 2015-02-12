@@ -32,23 +32,24 @@
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">CDP Hosts <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
-                            {% for host in hosts %}
+                            {% for host in NAV_hosts %}
                                 <li><a href="{{ url_for('show_host', host_id=host.id) }}">{{ host.hostname }}</a></li>
                             {% endfor %}
                             </ul>
                         </li>
+                        <li><a href="{{ url_for('list_clients') }}">Agent List</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
         <div id="content" class="container" role="main">
-            <div>
-            {% block content %}{% endblock %}
-            </div>
+        {% block content %}{% endblock %}
         </div>
-        <div id="footer" class="container footer">
+        <div id="footer" class="container footer well">
         {% block footer %}
-        &copy; Copyright 2015 by <a href="http://www.nexcess.net/">Nexcess.net</a>.
+            <div class="text-center">
+                &copy; Copyright 2015 by <a href="http://www.nexcess.net/">Nexcess.net</a>.
+            </div>
         {% endblock %}
         </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>

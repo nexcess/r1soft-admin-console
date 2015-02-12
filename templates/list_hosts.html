@@ -4,9 +4,22 @@
     <div class="page-header">
         <h1>CDP Hosts</h1>
     </div>
-    <div class="btn-group">
-        {% for host in hosts %}
-        <li><a href="{{ url_for('show_host', host_id=host.id) }}">{{ host.hostname }}</a></li>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>CDP Version</th>
+                <th>Hostname</th>
+                <th>Control Panel</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for host in NAV_hosts %}
+            <tr>
+                <td>NYI</td>
+                <td><a href="{{ url_for('show_host', host_id=host.id) }}">{{ host.hostname }}</a></td>
+                <td><a href="{{ host.external_link }}"><i class="fa fa-arrow-right fa-2x"></i></a></td>
+            </tr>
         {% endfor %}
-    </div>
+        </tbody>
+    </table>
 {% endblock %}

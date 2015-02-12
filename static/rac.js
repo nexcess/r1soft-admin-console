@@ -27,7 +27,7 @@ jQuery.expr[':'].Contains = function(a,i,m){
     return (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase())>=0;
 };
 
-function listFilter(attach_point, collection, filter_item) {
+function addCollectionFilter(attach_point, collection, filter_item) {
     // header is any element, list is an unordered list
 
     // create and add the filter form to the header
@@ -47,7 +47,7 @@ function listFilter(attach_point, collection, filter_item) {
             $(collection).find(filter_item).show();
         }
         return false;
-    }).keyup(function () {
+    }).keypress(function () {
         // fire the above change event after every letter
         $(this).change();
     });
