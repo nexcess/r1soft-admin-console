@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}CDP Host{% endblock %}
+{% block title %}CDP Agents{% endblock %}
 {% block content %}
     <h2>
         Agents
@@ -51,70 +51,7 @@
     {% endfor %}
     ];
 
-    $.each(hosts, function(idx, host) {
-        $.getJSON(host.url_list_clients_json,
-            function(response_data) {
-                $.each(response_data, function(policy_id, data) {
-                    if(!data.agent) {
-                        $("#host-group-item-"+host.id).addClass("list-group-item-warning");
-                        return;
-                    }
-                    var row = $("<tr>").attr({id: policy_id}),
-                        type = $("<td>"),
-                        hostname = $("<td>").text(data.agent.hostname),
-                        description = $("<td>").text(data.agent.description),
-                        cdp_host = $("<td>").html("<a href=\""+host.external_link+"\">"+host.hostname+"</a>"),
-                        rp_limit = $("<td>").text(data.policy.recoveryPointLimit),
-                        db_module = $("<td>"),
-                        state = $("<td>").text(data.policy.state);
-                    if(data.agent.databaseAddOnEnabled &&
-                            data.policy.databaseInstanceList &&
-                            data.policy.databaseInstanceList.length > 0) {
-                        db_module.html("<span class=\"label label-success\">Yes</span>");
-                    } else {
-                        db_module.html("<span class=\"label label-danger\">No</span>");
-                    }
-                    switch(data.agent.osType) {
-                        case "LINUX":
-                            $(type).append($("<i>").attr({title: data.agent.osType,
-                                class: "fa fa -lg fa-linux"}));
-                            break;
-                        default:
-                            $(type).append($("<i>").attr({title: data.agent.osType,
-                                class: "fa fa -lg fa-question-circle"}));
-                    }
-                    switch(data.policy.state) {
-                        case "ERROR":
-                            $(row).attr({class: "danger"});
-                            break;
-                        case "ALERT":
-                            $(row).attr({class: "warning"});
-                            break;
-                        case "OK":
-                            $(row).attr({class: "success"});
-                            break;
-                    }
-                    if(!data.policy.enabled) {
-                        $(row.attr({class: "default"}));
-                    }
-
-                    $.each([type, hostname, description, cdp_host, rp_limit, db_module, state],
-                        function(i, v) {
-                            $(row).append(v);
-                        });
-                    $(row).appendTo($("#agents-list-table"));
-                });
-
-                $("#host-group-item-"+host.id).addClass("list-group-item-success");
-                $("#agents-list-table").trigger("update");
-            }
-        ).fail(function() {
-            $("#host-group-item-"+host.id).addClass("list-group-item-danger");
-        }).always(function() {
-            $("#host-spinner-"+host.id).hide();
-        });
-
-    });
+    $.each(hosts, agent_collection_updateAgentList);
 
     $(function() {
         var table = $("#agents-list-table").tablesorter({
