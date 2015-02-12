@@ -145,26 +145,17 @@ def dashboard():
     return render_template('dashboard.html')
 
 @app.route('/host/')
-def list_hosts():
-    return render_template('list_hosts.html')
+def host_collection():
+    return render_template('host_collection.html')
 
 @app.route('/host/<int:host_id>')
-def show_host(host_id):
+def host_details(host_id):
     host = R1softHost.query.get(host_id)
-    return render_template('show_host.html',
+    return render_template('host_details.html',
         host=host,
         host_info=host.conn.Configuration.service.getServerInformation(),
         host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
-        clients=host.conn.Agent.service.getAgents())
-
-@app.route('/host/<int:host_id>/clients')
-def list_clients_json(host_id):
-    host = R1softHost.query.get(host_id)
-    policies = host.conn.Policy2.service.getPolicies()
-    return jsonify(soap2native({
-        p.id: {'policy': p, 'agent': policy2agent(p)} \
-            for p in policies
-        }))
+        agents=host.conn.Agent.service.getAgents())
 
 @app.route('/host/<int:host_id>/return_licenses', methods=['POST'])
 def host_return_licenses(host_id):
@@ -173,17 +164,26 @@ def host_return_licenses(host_id):
     result = host.conn.Configuration.service.returnLicenses()
     return result
 
-@app.route('/host/client/')
-def list_clients():
-    return render_template('list_clients.html')
+@app.route('/agents/')
+def agent_collection():
+    return render_template('agent_collection.html')
 
-@app.route('/host/<int:host_id>/client/<client_uuid>/')
-def show_client(host_id, client_uuid):
+@app.route('/host/<int:host_id>/agents')
+def agent_collection_data(host_id):
     host = R1softHost.query.get(host_id)
-    client = host.conn.Agent.service.getAgentByID(client_uuid)
-    return render_template('show_client.html',
+    policies = host.conn.Policy2.service.getPolicies()
+    return jsonify(soap2native({
+        p.id: {'policy': p, 'agent': policy2agent(p)} \
+            for p in policies
+        }))
+
+@app.route('/host/<int:host_id>/agent/<agent_uuid>/')
+def agent_details(host_id, agent_uuid):
+    host = R1softHost.query.get(host_id)
+    agent = host.conn.Agent.service.getAgentByID(agent_uuid)
+    return render_template('agent_details.html',
         host=host,
-        client=client)
+        agent=agent)
 
 
 if __name__ == '__main__':

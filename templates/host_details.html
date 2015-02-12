@@ -80,20 +80,20 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% for client in clients %}
+                {% for agent in agents %}
                     <tr>
                         <td>
-                            {% if client.osType == 'LINUX' %}
-                            <i title="{{ client.osType }}" class="fa fa-linux fa-lg"></i>
+                            {% if agent.osType == 'LINUX' %}
+                            <i title="{{ agent.osType }}" class="fa fa-linux fa-lg"></i>
                             {% else %}
-                            <i title="{{ client.osType }}" class="fa fa-question-circle fa-lg"></i>
+                            <i title="{{ agent.osType }}" class="fa fa-question-circle fa-lg"></i>
                             {% endif %}
                         </td>
-                        <td><a href="{{ url_for('show_client', host_id=host.id, client_uuid=client.id) }}">{{ client.hostname }}</a></td>
-                        <td>{{ client.description }}</td>
-                        <td>{{ client.lastKnownAgentVersion }}</td>
+                        <td><a href="{{ url_for('agent_details', host_id=host.id, agent_uuid=agent.id) }}">{{ agent.hostname }}</a></td>
+                        <td>{{ agent.description }}</td>
+                        <td>{{ agent.lastKnownAgentVersion }}</td>
                         <td>
-                            {% if client.databaseAddOnEnabled %}
+                            {% if agent.databaseAddOnEnabled %}
                             <span class="label label-success">Yes</span>
                             {% else %}
                             <span class="label label-danger">No</span>

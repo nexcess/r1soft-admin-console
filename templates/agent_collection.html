@@ -46,7 +46,7 @@
             id: {{ host.id }},
             hostname: "{{ host.hostname }}",
             url_external_link: "{{ host.external_link }}",
-            url_list_clients_json: "{{ url_for('list_clients_json', host_id=host.id) }}"
+            url_list_clients_json: "{{ url_for('agent_collection_data', host_id=host.id) }}"
         },
     {% endfor %}
     ];

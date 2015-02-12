@@ -33,11 +33,11 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">CDP Hosts <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
                             {% for host in NAV_hosts %}
-                                <li><a href="{{ url_for('show_host', host_id=host.id) }}">{{ host.hostname }}</a></li>
+                                <li><a href="{{ url_for('host_details', host_id=host.id) }}">{{ host.hostname }}</a></li>
                             {% endfor %}
                             </ul>
                         </li>
-                        <li><a href="{{ url_for('list_clients') }}">Agent List</a></li>
+                        <li><a href="{{ url_for('agent_collection') }}">Agent List</a></li>
                     </ul>
                 </div>
             </div>

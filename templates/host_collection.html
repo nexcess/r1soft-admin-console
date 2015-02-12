@@ -16,7 +16,7 @@
         {% for host in NAV_hosts %}
             <tr>
                 <td>NYI</td>
-                <td><a href="{{ url_for('show_host', host_id=host.id) }}">{{ host.hostname }}</a></td>
+                <td><a href="{{ url_for('host_details', host_id=host.id) }}">{{ host.hostname }}</a></td>
                 <td><a href="{{ host.external_link }}"><i class="fa fa-arrow-right fa-2x"></i></a></td>
             </tr>
         {% endfor %}
