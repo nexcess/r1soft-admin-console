@@ -27,21 +27,33 @@ from rac import app, db, manager, R1softHost, UUIDLink
 
 
 @manager.command
-def populate_uuid_map():
+def populate_uuid_map(host=''):
     app.logger.info('Populating the UUID Map table')
-    for host in R1softHost.query.filter_by(active=True):
+    if host:
+        hosts_list = R1softHost.query.filter_by(hostname=host)
+    else:
+        hosts_list = R1softHost.query.filter_by(active=True)
+    for host in hosts_list:
         app.logger.info('Updating map links for host[%d]: %s', host.id, host.hostname)
         try:
             disksafes = host.conn.DiskSafe.service.getDiskSafes()
             app.logger.debug('Pulled %d disk safe objects from API', len(disksafes))
             policies = host.conn.Policy2.service.getPolicies()
             app.logger.debug('Pulled %d policy objects from API', len(policies))
-        except (URLError, SSLError):
-            app.logger.warning('Connection to host timed out, marking inactive and skipping...')
+        except (URLError, SSLError) as err:
+            app.logger.warning('Error connecting to host: %s', host.hostname)
+            app.logger.exception(err)
+            app.logger.info('Marking inactive and skipping')
             host.active = False
             db.session.add(host)
             db.session.commit()
             continue
+        else:
+            if not host.active:
+                host.active = True
+                db.session.add(host)
+                db.session.commit()
+
         app.logger.info('Preparing to create mappings')
         for policy in policies:
             policy_uuid = policy.id
