@@ -60,12 +60,14 @@ class R1softHost(db.Model):
         self.api_ssl = api_ssl
         self.web_port = web_port
         self.web_ssl = web_ssl
+        self.active = active
 
     @property
     def conn(self):
         if self._conn is None:
             self._conn = CDP3Client(self.hostname, self.username, self.password,
-                port=self.api_port, ssl=self.api_ssl)
+                port=self.api_port, ssl=self.api_ssl,
+                timeout=app.config['R1SOFT_API_TIMEOUT'])
         return self._conn
 
     @property
@@ -108,7 +110,7 @@ class UUIDLink(db.Model):
 
     @property
     def policy(self):
-        return self.host.conn.DiskSafe.service.getPolicyByID(self.policy_uuid)
+        return self.host.conn.Policy2.service.getPolicyById(self.policy_uuid)
 
 
 def soap2native(soap_obj):
@@ -136,6 +138,11 @@ def policy2agent(policy):
 def inject_hosts():
     return {'NAV_hosts': R1softHost.query.filter_by(active=True)}
 
+@app.context_processor
+def inject_obj_attr_filter():
+    return {'obj_attr_filter':
+        lambda obj_list, attr, value: [o for o in obj_list if getattr(o, attr) == value]}
+
 @app.template_filter('naturalsize')
 def naturalsize_filter(s):
     return naturalsize(s)
@@ -151,18 +158,35 @@ def host_collection():
 @app.route('/host/<int:host_id>')
 def host_details(host_id):
     host = R1softHost.query.get(host_id)
+    primary_disk = sorted([host.conn.StorageDisk.service.getStorageDiskByPath(p) \
+            for p in host.conn.StorageDisk.service.getStorageDiskPaths()],
+        key=lambda i: i.capacityBytes)[-1]
     return render_template('host_details.html',
         host=host,
         host_info=host.conn.Configuration.service.getServerInformation(),
         host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
+        policies=host.conn.Policy2.service.getPolicies(),
+        volumes=host.conn.Volume.service.getVolumes(),
+        disk=primary_disk,
         agents=host.conn.Agent.service.getAgents())
 
 @app.route('/host/<int:host_id>/return_licenses', methods=['POST'])
 def host_return_licenses(host_id):
     return 'NYI'
+
     host = R1softHost.query.get(host_id)
     result = host.conn.Configuration.service.returnLicenses()
     return result
+
+@app.route('/host/<int:host_id>/api-proxy/<namespace>/<method>', methods=['POST'])
+def host_api_proxy(host_id, namespace, method):
+    return 'NYI'
+
+    host = R1softHost.query.get(host_id)
+    soap_method = getattr(getattr(host.conn, namespace).service, method)
+    params = request.get_json()
+    func = lambda: soap_method(**params)
+    return jsonify({'response': soap2native(func())})
 
 @app.route('/agents/')
 def agent_collection():
@@ -181,8 +205,10 @@ def agent_collection_data(host_id):
 def agent_details(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
     agent = host.conn.Agent.service.getAgentByID(agent_uuid)
+    links = UUIDLink.query.filter_by(agent_uuid=agent_uuid)
     return render_template('agent_details.html',
         host=host,
+        links=links,
         agent=agent)
 
 

@@ -5,7 +5,7 @@
         <h1>{{ host.hostname }}</h1>
     </div>
     <h2>Server Information</h2>
-    <div class="row">
+    <div class="row col-md-12">
         <div class="col-md-12 well">
             <table class="table">
                 <tbody>
@@ -13,56 +13,191 @@
                         <td>Server Version</td>
                         <td>{{ host_lic_info.version or 'UNKNOWN'}}</td>
                     </tr>
-                    <tr>
-                        <td>Physical License Usage</td>
-                        <td>{{ host_lic_info.currentAgentCount }} / {{ host_lic_info.licenseAgentCount }}</td>
-                    </tr>
-                    <tr>
-                        <td>Virtual License Usage</td>
-                        <td>{{ host_lic_info.currentVirtualAgentCount }} / {{ host_lic_info.licenseVirtualAgentCount }}</td>
-                    </tr>
-                    <tr>
-                        <td>Memory Usage</td>
-                        <td>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row col-md-12">
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4><strong>Servers &amp; Policies</strong></h4>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-2 text-center">
+                            <h2 class="text-primary">{{ agents|length }}</h2>
+                            Servers
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h2 class="text-primary">{{ policies|length }}</h2>
+                            Policies
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h2 class="text-danger">{{ obj_attr_filter(policies, 'state', 'ERROR')|length }}</h2>
+                            Failed
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h2 class="text-warning">{{ obj_attr_filter(policies, 'state', 'ALERT')|length }}</h2>
+                            Warning
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h2 class="text-default">{{ obj_attr_filter(policies, 'enabled', False)|length }}</h2>
+                            Disabled
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4><strong>Storage</strong></h4>
+                </div>
+                <div class="panel-body">
+                    {% for volume in volumes %}
+                    <div class="row">
+                        <div class="col-md-6 text-center">
+                            <h3><strong>{{ volume.name }}</strong></h3>
+                            {{ volume.description }}
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <h3><strong>{{ volume.onDiskSize|naturalsize }}</strong></h3>
+                            Used
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="row">
+                        {% set diskUsage = (100 * (disk.usageBytes / disk.capacityBytes))|round(0, 'floor') %}
+                        <div class="col-md-3 text-center">
+                            {% if diskUsage > 95 %}
+                            <h2 class="text-danger"><strong>{{ diskUsage }}%</strong></h2>
+                            {% elif diskUsage > 90 %}
+                            <h2 class="text-warning"><strong>{{ diskUsage }}%</strong></h2>
+                            {% else %}
+                            <h2><strong>{{ diskUsage }}%</strong></h2>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h4><strong>{{ disk.path }}</strong></h4>
+                            {{ disk.device }}
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h4><strong>{{ disk.capacityBytes|naturalsize }}</strong></h4>
+                            Total
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <h4><strong>{{ disk.usageBytes|naturalsize }}</strong></h4>
+                            Used
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4><strong>Memory</strong></h4>
+                </div>
+                <div class="panel-body">
+                    <div class="row col-md-12">
+                        <h5><strong>Memory Usage</strong></h5>
+                        <div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar"
                                         aria-valuenow="{{ (100 - (host_info.freePhysicalMemory / host_info.totalPhysicalMemory))|round(0, 'floor') }}"
                                         aria-valuemin="0" aria-valuemax="100"
                                         style="width: {{ (100 - (host_info.freePhysicalMemory / host_info.totalPhysicalMemory))|round(1, 'floor') }}%;">
-                                    {{ (100 - (host_info.freePhysicalMemory / host_info.totalPhysicalMemory))|round(1, 'floor') }}% of {{ host_info.totalPhysicalMemory|naturalsize }}
                                 </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Heap Usage</td>
-                        <td>
+                            </div>
+                        </div>
+                        <span><strong>{{ (100 - (host_info.freePhysicalMemory / host_info.totalPhysicalMemory))|round(1, 'floor') }}%</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_info.totalPhysicalMemory|naturalsize }}</strong> Total</span>
+                    </div>
+                    <div class="row col-md-12">
+                        <h5><strong>Heap Usage</strong></h5>
+                        <div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar"
                                         aria-valuenow="{{ (100 * (host_info.heapMemoryInformation.used / host_info.heapMemoryInformation.maximum))|round(0, 'floor') }}"
                                         aria-valuemin="0" aria-valuemax="100"
                                         style="width: {{ (100 * (host_info.heapMemoryInformation.used / host_info.heapMemoryInformation.maximum))|round(0, 'floor') }}%;">
-                                    {{ (100 * (host_info.heapMemoryInformation.used / host_info.heapMemoryInformation.maximum))|round(1, 'floor') }}% of {{ host_info.heapMemoryInformation.maximum|naturalsize }}
                                 </div>
                             </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Non-Heap Usage</td>
-                        <td>
+                        </div>
+                        <span><strong>{{ (100 * (host_info.heapMemoryInformation.used / host_info.heapMemoryInformation.maximum))|round(1, 'floor') }}%</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_info.heapMemoryInformation.maximum|naturalsize }}</strong> Total</span>
+                    </div>
+                    <div class="row col-md-12">
+                        <h5><strong>Non-Heap Usage</strong></h5>
+                        <div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar"
                                         aria-valuenow="{{ (100 * (host_info.nonHeapMemoryInformation.used / host_info.nonHeapMemoryInformation.maximum))|round(0, 'floor') }}"
                                         aria-valuemin="0" aria-valuemax="100"
                                         style="width: {{ (100 * (host_info.nonHeapMemoryInformation.used / host_info.nonHeapMemoryInformation.maximum))|round(0, 'floor') }}%;">
-                                    {{ (100 * (host_info.nonHeapMemoryInformation.used / host_info.nonHeapMemoryInformation.maximum))|round(1, 'floor') }}% of {{ host_info.nonHeapMemoryInformation.maximum|naturalsize }}
                                 </div>
                             </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </div>
+                        <span><strong>{{ (100 * (host_info.nonHeapMemoryInformation.used / host_info.nonHeapMemoryInformation.maximum))|round(1, 'floor') }}%</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_info.nonHeapMemoryInformation.maximum|naturalsize }}</strong> Total</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4><strong>Licenses</strong></h4>
+                </div>
+                <div class="panel-body">
+                    <div class="row col-md-12">
+                        <div class="col-md-2 text-center">
+                            <h2>{{ host_lic_info.currentAgentCount }}</h2>
+                            Physical Servers
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h2>{{ host_lic_info.currentVirtualAgentCount }}</h2>
+                            Virtual Servers
+                        </div>
+                    </div>
+                    {% if host_lic_info.licenseAgentCount > 0 %}
+                    <div class="row col-md-12">
+                        <h5><strong>Physical Servers</strong></h5>
+                        <div>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar"
+                                        aria-valuenow="{{ (100 * (host_lic_info.currentAgentCount / host_lic_info.licenseAgentCount))|round(0, 'floor') }}"
+                                        aria-valuemin="0" aria-valuemax="100"
+                                        style="width: {{ (100 * (host_lic_info.currentAgentCount / host_lic_info.licenseAgentCount))|round(0, 'floor') }}%;">
+                                </div>
+                            </div>
+                        </div>
+                        <span><strong>{{ host_lic_info.currentAgentCount }}</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_lic_info.licenseAgentCount - host_lic_info.currentAgentCount}}</strong> Remaining</span>
+                    </div>
+                    {% endif %}
+                    {% if host_lic_info.licenseVirtualAgentCount > 0 %}
+                    <div class="row col-md-12">
+                        <h5><strong>Physical Servers</strong></h5>
+                        <div>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar"
+                                        aria-valuenow="{{ (100 * (host_lic_info.currentVirtualAgentCount / host_lic_info.licenseVirtualAgentCount))|round(0, 'floor') }}"
+                                        aria-valuemin="0" aria-valuemax="100"
+                                        style="width: {{ (100 * (host_lic_info.currentVirtualAgentCount / host_lic_info.licenseVirtualAgentCount))|round(0, 'floor') }}%;">
+                                </div>
+                            </div>
+                        </div>
+                        <span><strong>{{ host_lic_info.currentVirtualAgentCount }}</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_lic_info.licenseVirtualAgentCount - host_lic_info.currentVirtualAgentCount}}</strong> Remaining</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
+    <hr>
     <h2>
         Agents
         <input id="agents-filter-input" class="pull-right" type="text" placeholder="Search..." data-column="2,3">
