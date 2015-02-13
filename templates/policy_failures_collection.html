@@ -1,10 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}CDP Agents{% endblock %}
 {% block content %}
-    <h2>
-        Policy Failures
-        <input type="text" id="policy-filter-input" class="pull-right" placeholder="Search..." data-column="1,2,3,4">
-    </h2>
+    <h2>Policy Failures</h2>
     <div class="row">
         <div class="col-md-9">
             <table id="policy-list-table" class="table">
@@ -39,32 +36,35 @@
 <script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
 <script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
-    var hosts = [
-    {% for host in NAV_hosts %}
-        {
-            id: {{ host.id }},
-            hostname: "{{ host.hostname }}",
-            url_external_link: "{{ host.external_link }}",
-            url_policy_failures_collection_data: "{{ url_for('policy_failures_collection_data', host_id=host.id) }}"
-        },
-    {% endfor %}
-    ];
-
-    $.each(hosts, function(idx, host) {
-        policy_failures_collection_updatePolicyList(host);
-        $("#host-group-item-"+host.id).click(function() {
-            if($("#host-group-item-"+host.id).hasClass("list-group-item-danger")) {
-                policy_failures_collection_updatePolicyList(host);
-            }
-        });
-    });
-
     $(function() {
+        var hosts = [
+        {% for host in NAV_hosts %}
+            {
+                id: {{ host.id }},
+                hostname: "{{ host.hostname }}",
+                url_external_link: "{{ host.external_link }}",
+                url_policy_failures_collection_data: "{{ url_for('policy_failures_collection_data', host_id=host.id) }}"
+            },
+        {% endfor %}
+        ];
+
+        $.each(hosts, function(idx, host) {
+            policy_failures_collection_updatePolicyList(host);
+            $("#host-group-item-"+host.id).click(function() {
+                if($("#host-group-item-"+host.id).hasClass("list-group-item-danger")) {
+                    policy_failures_collection_updatePolicyList(host);
+                }
+            });
+        });
+
+        $("#nav-filter-input").prop("disabled", false).attr({
+            'data-column': "1,2,3,4"
+        });
         var table = $("#policy-list-table").tablesorter({
             sortList: [[1,0]],
             widgets: ["filter"],
             widgetOptions: {
-                filter_external: $("#policy-filter-input"),
+                filter_external: $("#nav-filter-input"),
                 filter_columnFilters: false,
             }
         })

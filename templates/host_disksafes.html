@@ -2,12 +2,59 @@
 {% block title %}{{ host.hostname }} - Disk Safes{% endblock %}
 {% block host_content %}
 <div class="row">
-
+    <h2>Disk Safes</h2>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="disksafes-list-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Open</th>
+                        <th>Name</th>
+                        <th>Recovery Points</th>
+                        <th>Devices</th>
+                        <th>On Disk Size</th>
+                        <th>Delta Size</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for disksafe in disksafes %}
+                    <tr id="{{ disksafe.id }}">
+                        <td>
+                            {% if disksafe.open %}
+                            <i class="fa fa-check fa-lg"></i>
+                            {% else %}
+                            <i class="fa fa-times fa-lg"></i>
+                            {% endif %}
+                        </td>
+                        <td>{{ disksafe.description }}</td>
+                        <td>{{ disksafe.recoveryPointCount }}</td>
+                        <td>{{ disksafe.deviceCount }}</td>
+                        <td>{{ disksafe.bytesOnDisk|naturalsize }}</td>
+                        <td>{{ disksafe.sizeOfDeltasInDiskSafe|naturalsize }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}
 {% block customjs %}
 <script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
 <script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
+    $(function () {
+        $("#nav-filter-input").prop("disabled", false).attr({
+            'data-column': "1"
+        });
+        var table = $("#disksafes-list-table").tablesorter({
+            sortList: [[4,1]],
+            widgets: ["filter"],
+            widgetOptions: {
+                filter_external: $("#nav-filter-input"),
+                filter_columnFilters: false,
+            }
+        })
+    });
 </script>
 {% endblock %}

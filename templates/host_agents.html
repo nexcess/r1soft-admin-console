@@ -2,15 +2,13 @@
 {% block title %}{{ host.hostname }} - Agents{% endblock %}
 {% block host_content %}
 <div class="row">
-    <h2>
-        Agents
-        <input id="agents-filter-input" class="pull-right" type="text" placeholder="Search..." data-column="2,3">
-    </h2>
+    <h2>Agents</h2>
     <div class="row">
         <div class="col-md-12">
             <table id="agents-list-table" class="table">
                 <thead>
                     <tr>
+                        <th>OS</th>
                         <th>Type</th>
                         <th>Hostname</th>
                         <th>Description</th>
@@ -20,12 +18,19 @@
                 </thead>
                 <tbody>
                 {% for agent in agents %}
-                    <tr>
+                    <tr id="{{ agent.id }}">
                         <td>
                             {% if agent.osType == 'LINUX' %}
                             <i title="{{ agent.osType }}" class="fa fa-linux fa-lg"></i>
                             {% else %}
                             <i title="{{ agent.osType }}" class="fa fa-question-circle fa-lg"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if agent.agentType == 'PHYSICAL' %}
+                            <i title="{{ agent.agentType }}" class="fa fa-hdd-o fa-lg"></i>
+                            {% else %}
+                            <i title="{{ agent.agentType }}" class="fa fa-cloud fa-lg"></i>
                             {% endif %}
                         </td>
                         <td><a href="{{ url_for('agent_details', host_id=host.id, agent_uuid=agent.id) }}">{{ agent.hostname }}</a></td>
@@ -51,11 +56,14 @@
 <script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
     $(function () {
+        $("#nav-filter-input").prop("disabled", false).attr({
+            'data-column': "2,3"
+        });
         var table = $("#agents-list-table").tablesorter({
-            sortList: [[1,0], [2,0]],
+            sortList: [[2,0]],
             widgets: ["filter"],
             widgetOptions: {
-                filter_external: $("#agents-filter-input"),
+                filter_external: $("#nav-filter-input"),
                 filter_columnFilters: false,
             }
         })

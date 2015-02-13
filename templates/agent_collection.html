@@ -1,10 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}CDP Agents{% endblock %}
 {% block content %}
-    <h2>
-        Agents
-        <input type="text" id="agents-filter-input" class="pull-right" placeholder="Search..." data-column="2,3,4">
-    </h2>
+    <h2>Agents</h2>
     <div class="row">
         <div class="col-md-9">
             <table id="agents-list-table" class="table">
@@ -41,32 +38,35 @@
 <script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
 <script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
-    var hosts = [
-    {% for host in NAV_hosts %}
-        {
-            id: {{ host.id }},
-            hostname: "{{ host.hostname }}",
-            url_external_link: "{{ host.external_link }}",
-            url_agent_collection_data: "{{ url_for('agent_collection_data', host_id=host.id) }}"
-        },
-    {% endfor %}
-    ];
-
-    $.each(hosts, function(idx, host) {
-        agent_collection_updateAgentList(host);
-        $("#host-group-item-"+host.id).click(function() {
-            if($("#host-group-item-"+host.id).hasClass("list-group-item-danger")) {
-                agent_collection_updateAgentList(host);
-            }
-        });
-    });
-
     $(function() {
+        var hosts = [
+        {% for host in NAV_hosts %}
+            {
+                id: {{ host.id }},
+                hostname: "{{ host.hostname }}",
+                url_external_link: "{{ host.external_link }}",
+                url_agent_collection_data: "{{ url_for('agent_collection_data', host_id=host.id) }}"
+            },
+        {% endfor %}
+        ];
+
+        $.each(hosts, function(idx, host) {
+            agent_collection_updateAgentList(host);
+            $("#host-group-item-"+host.id).click(function() {
+                if($("#host-group-item-"+host.id).hasClass("list-group-item-danger")) {
+                    agent_collection_updateAgentList(host);
+                }
+            });
+        });
+
+        $("#nav-filter-input").prop("disabled", false).attr({
+            'data-column': "2,3,4"
+        });
         var table = $("#agents-list-table").tablesorter({
             sortList: [[1,0],[2,0]],
             widgets: ["filter"],
             widgetOptions: {
-                filter_external: $("#agents-filter-input"),
+                filter_external: $("#nav-filter-input"),
                 filter_columnFilters: false,
             }
         })

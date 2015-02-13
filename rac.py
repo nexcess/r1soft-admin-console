@@ -213,13 +213,15 @@ def host_agents(host_id):
 def host_disksafes(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host_disksafes.html',
-        host=host)
+        host=host,
+        disksafes=host.conn.DiskSafe.service.getDiskSafes())
 
 @app.route('/host/<int:host_id>/policies')
 def host_policies(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host_policies.html',
-        host=host)
+        host=host,
+        policies=host.conn.Policy2.service.getPolicies())
 
 @app.route('/host/<int:host_id>/recovery-points')
 def host_recovery_points(host_id):
