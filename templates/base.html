@@ -21,13 +21,13 @@
     </head>
     <body role="document">
         <nav class="navbar navbar-inverse navbar-fixed-top">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="navbar-header">
                     <a href="https://github.com/nexcess/r1soft-admin-console" class="navbar-brand">R1soft Admin Console</a>
                     <!-- <a href="{{ url_for('dashboard') }}" class="navbar-brand">R1soft Admin Console</a> -->
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
+                    <ul class="nav navbar-nav navbar-right">
                         <li class="{% block dashboard_active %}{% endblock %}"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
                         <li class="dropdown {% block host_details_active %}{% endblock %}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">CDP Hosts <span class="caret"></span></a>
@@ -39,11 +39,16 @@
                         </li>
                         <li class="{% block agent_collection_active %}{% endblock %}"><a href="{{ url_for('agent_collection') }}">Agent List</a></li>
                         <li class="{% block policy_failures_collection_active %}{% endblock %}"><a href="{{ url_for('policy_failures_collection') }}">Policy Failures</a></li>
+                        <li class="{% block settings_active %}{% endblock %}"><a href="#">Settings</a></li>
+                        <li>{% block profile_link %}<a href="#">Login</a>{% endblock %}</li>
                     </ul>
+                    <form action="#" class="navbar-form navbar-right">
+                        <input type="text" class="form-control" placeholder="Search...">
+                    </form>
                 </div>
             </div>
         </nav>
-        <div id="content" class="container" role="main">
+        <div id="content" class="container-fluid" role="main">
             <div id="message-area-container" class="col-md-12 row">
                 <div class="panel panel-default">
                     <div class="panel-heading" role="tab" data-toggle="collapse" data-target="#message-area">
