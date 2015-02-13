@@ -50,7 +50,14 @@
     {% endfor %}
     ];
 
-    $.each(hosts, policy_failures_collection_updatePolicyList);
+    $.each(hosts, function(idx, host) {
+        policy_failures_collection_updatePolicyList(host);
+        $("#host-group-item-"+host.id).click(function() {
+            if($("#host-group-item-"+host.id).hasClass("list-group-item-danger")) {
+                policy_failures_collection_updatePolicyList(host);
+            }
+        });
+    });
 
     $(function() {
         var table = $("#policy-list-table").tablesorter({

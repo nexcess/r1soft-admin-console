@@ -52,7 +52,14 @@
     {% endfor %}
     ];
 
-    $.each(hosts, agent_collection_updateAgentList);
+    $.each(hosts, function(idx, host) {
+        agent_collection_updateAgentList(host);
+        $("#host-group-item-"+host.id).click(function() {
+            if($("#host-group-item-"+host.id).hasClass("list-group-item-danger")) {
+                agent_collection_updateAgentList(host);
+            }
+        });
+    });
 
     $(function() {
         var table = $("#agents-list-table").tablesorter({

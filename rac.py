@@ -178,31 +178,53 @@ def host_collection():
     return render_template('host_collection.html')
 
 @app.route('/host/<int:host_id>')
+@app.route('/host/<int:host_id>/dashboard')
 def host_details(host_id):
     host = R1softHost.query.get(host_id)
-    primary_disk = sorted([host.conn.StorageDisk.service.getStorageDiskByPath(p) \
+    disks = sorted([host.conn.StorageDisk.service.getStorageDiskByPath(p) \
             for p in host.conn.StorageDisk.service.getStorageDiskPaths()],
-        key=lambda i: i.capacityBytes)[-1]
+        key=lambda i: i.capacityBytes,
+        reverse=True)[:3]
     return render_template('host_details.html',
         host=host,
         host_info=host.conn.Configuration.service.getServerInformation(),
         host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
         policies=host.conn.Policy2.service.getPolicies(),
         volumes=host.conn.Volume.service.getVolumes(),
-        disk=primary_disk,
+        disks=disks,
         agents=host.conn.Agent.service.getAgents())
 
-@app.route('/host/<int:host_id>/return_licenses', methods=['POST'])
-def host_return_licenses(host_id):
-    return 'NYI'
+@app.route('/host/<int:host_id>/volumes')
+def host_volumes(host_id):
+    pass
 
-    host = R1softHost.query.get(host_id)
-    result = host.conn.Configuration.service.returnLicenses()
-    return result
+@app.route('/host/<int:host_id>/agents')
+def host_agents(host_id):
+    pass
+
+@app.route('/host/<int:host_id>/disksafes')
+def host_disksafes(host_id):
+    pass
+
+@app.route('/host/<int:host_id>/policies')
+def host_policies(host_id):
+    pass
+
+@app.route('/host/<int:host_id>/recovery-points')
+def host_recovery_points(host_id):
+    pass
+
+@app.route('/host/<int:host_id>/task-history')
+def host_task_history(host_id):
+    pass
+
+@app.route('/host/<int:host_id>/configuration')
+def host_configuration(host_id):
+    pass
 
 @app.route('/host/<int:host_id>/api-proxy/<namespace>/<method>', methods=['POST'])
 def host_api_proxy(host_id, namespace, method):
-    return 'NYI'
+    raise NotImplementedError()
 
     host = R1softHost.query.get(host_id)
     soap_method = getattr(getattr(host.conn, namespace).service, method)
@@ -210,11 +232,11 @@ def host_api_proxy(host_id, namespace, method):
     func = lambda: soap_method(**params)
     return jsonify({'response': soap2native(func())})
 
-@app.route('/agents/')
+@app.route('/meta/agents/')
 def agent_collection():
     return render_template('agent_collection.html')
 
-@app.route('/host/<int:host_id>/agents')
+@app.route('/meta/host/<int:host_id>/agents')
 def agent_collection_data(host_id):
     host = R1softHost.query.get(host_id)
     policies = host.conn.Policy2.service.getPolicies()
@@ -233,11 +255,11 @@ def agent_details(host_id, agent_uuid):
         links=links,
         agent=agent)
 
-@app.route('/policy-failures/')
+@app.route('/meta/policy-failures/')
 def policy_failures_collection():
     return render_template('policy_failures_collection.html')
 
-@app.route('/policy-failures/host/<int:host_id>/policies')
+@app.route('/meta/policy-failures/host/<int:host_id>/policies')
 def policy_failures_collection_data(host_id):
     host = R1softHost.query.get(host_id)
     policies = host.conn.Policy2.service.getPolicies()

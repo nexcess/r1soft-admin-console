@@ -71,11 +71,11 @@
         <script src="{{ url_for('static', filename='jquery.dateFormat.js') }}"></script>
         <script src="{{ url_for('static', filename='rac.js') }}"></script>
         <script>
-            $("#message-area").on("hidden.bs.collapse", function() {
+            $("#message-area").on("hide.bs.collapse", function() {
                 $("#message-area-toggle").attr({
                     class: "fa fa-plus-square pull-right"
                 });
-            }).on("shown.bs.collapse", function() {
+            }).on("show.bs.collapse", function() {
                 $("#message-area-toggle").attr({
                     class: "fa fa-minus-square pull-right"
                 });

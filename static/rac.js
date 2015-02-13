@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-function agent_collection_updateAgentList(idx, host) {
+function agent_collection_updateAgentList(host) {
     $("#host-group-item-"+host.id).attr({class: "list-group-item list-group-item-default"});
     $("#host-spinner-"+host.id).show();
     $("#host-spinner-"+host.id).addClass("fa-spin");
@@ -26,8 +26,8 @@ function agent_collection_updateAgentList(idx, host) {
             $.each(response_data, function(policy_id, data) {
                 if(!data.agent) {
                     $("#host-group-item-"+host.id).addClass("list-group-item-warning");
-                    addFlashMessage("warning", "Couldn't find agent for policy: " +
-                        data.policy.name + " @ " + host.hostname + "!");
+                    addFlashMessage("warning", "<strong>" + host.hostname + "</strong>: " +
+                        "Couldn't find agent for policy: " + data.policy.name);
                     return;
                 }
                 var row = $("<tr>").attr({id: policy_id}),
@@ -82,17 +82,14 @@ function agent_collection_updateAgentList(idx, host) {
         $("#host-group-item-"+host.id).addClass("list-group-item-success");
         $("#host-spinner-"+host.id).hide();
     }).fail(function() {
-        $("#host-group-item-"+host.id).addClass("list-group-item-danger")
-            .click(function() {
-                agent_collection_updateAgentList(idx, host)
-            });
+        $("#host-group-item-"+host.id).addClass("list-group-item-danger");
         addFlashMessage("danger", "<strong>"+host.hostname+"</strong> failed to load");
     }).always(function() {
         $("#host-spinner-"+host.id).removeClass("fa-spin");
     });
 }
 
-function policy_failures_collection_updatePolicyList(idx, host) {
+function policy_failures_collection_updatePolicyList(host) {
     $("#host-group-item-"+host.id).attr({class: "list-group-item list-group-item-default"});
     $("#host-spinner-"+host.id).show();
     $("#host-spinner-"+host.id).addClass("fa-spin");
@@ -152,10 +149,7 @@ function policy_failures_collection_updatePolicyList(idx, host) {
         $("#host-spinner-"+host.id).removeClass("fa-spin");
         $("#host-spinner-"+host.id).hide();
     }).fail(function() {
-        $("#host-group-item-"+host.id).addClass("list-group-item-danger")
-            .click(function() {
-                agent_collection_updateAgentList(idx, host)
-            });
+        $("#host-group-item-"+host.id).addClass("list-group-item-danger");
         $("#host-spinner-"+host.id).removeClass("fa-spin");
         addFlashMessage("danger", "<strong>"+host.hostname+"</strong> failed to load");
     });
