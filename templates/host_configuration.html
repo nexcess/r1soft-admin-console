@@ -1,0 +1,13 @@
+{% extends 'host_base.html' %}
+{% block title %}{{ host.hostname }} - Configuration{% endblock %}
+{% block host_content %}
+<div class="row">
+
+</div>
+{% endblock %}
+{% block customjs %}
+<script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
+<script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
+<script>
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}{{ host.hostname }}{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li><a href="{{ url_for('host_details', host_id=host.id) }}">Overview</a></li>
+                <li><a href="{{ url_for('host_volumes', host_id=host.id) }}">Volumes</a></li>
+                <li><a href="{{ url_for('host_agents', host_id=host.id) }}">Agents</a></li>
+                <li><a href="{{ url_for('host_disksafes', host_id=host.id) }}">Disk Safes</a></li>
+                <li><a href="{{ url_for('host_policies', host_id=host.id) }}">Policies</a></li>
+                <li><a href="{{ url_for('host_recovery_points', host_id=host.id) }}">Recovery Points</a></li>
+                <li><a href="{{ url_for('host_task_history', host_id=host.id) }}">Task History</a></li>
+                <li><a href="{{ url_for('host_configuration', host_id=host.id) }}">Configuration</a></li>
+            </ul>
+        </div>
+        <div class="col-md-10 col-md-offset-2 main">
+            <h1 class="page-header">
+                <strong>{{ host.hostname }}</strong>
+                <small class="pull-right">
+                {% if host_lic_info is defined %}
+                    CDP Version: {{ host_lic_info.version or 'UNKNOWN'}}
+                {% else %}
+                    User: {{ host.username }}
+                {% endif %}
+                </small>
+            </h1>
+            {% block host_content %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}
+{% block host_details_active %}active{% endblock %}

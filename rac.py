@@ -185,7 +185,7 @@ def host_details(host_id):
             for p in host.conn.StorageDisk.service.getStorageDiskPaths()],
         key=lambda i: i.capacityBytes,
         reverse=True)[:3]
-    return render_template('host_details.html',
+    return render_template('host_overview.html',
         host=host,
         host_info=host.conn.Configuration.service.getServerInformation(),
         host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
@@ -196,31 +196,48 @@ def host_details(host_id):
 
 @app.route('/host/<int:host_id>/volumes')
 def host_volumes(host_id):
-    pass
+    host = R1softHost.query.get(host_id)
+    return render_template('host_volumes.html',
+        host=host,
+        host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
+        volumes=host.conn.Volume.service.getVolumes())
 
 @app.route('/host/<int:host_id>/agents')
 def host_agents(host_id):
-    pass
+    host = R1softHost.query.get(host_id)
+    return render_template('host_agents.html',
+        host=host,
+        agents=host.conn.Agent.service.getAgents())
 
 @app.route('/host/<int:host_id>/disksafes')
 def host_disksafes(host_id):
-    pass
+    host = R1softHost.query.get(host_id)
+    return render_template('host_disksafes.html',
+        host=host)
 
 @app.route('/host/<int:host_id>/policies')
 def host_policies(host_id):
-    pass
+    host = R1softHost.query.get(host_id)
+    return render_template('host_policies.html',
+        host=host)
 
 @app.route('/host/<int:host_id>/recovery-points')
 def host_recovery_points(host_id):
-    pass
+    host = R1softHost.query.get(host_id)
+    return render_template('host_recovery_points.html',
+        host=host)
 
 @app.route('/host/<int:host_id>/task-history')
 def host_task_history(host_id):
-    pass
+    host = R1softHost.query.get(host_id)
+    return render_template('host_task_history.html',
+        host=host)
 
 @app.route('/host/<int:host_id>/configuration')
 def host_configuration(host_id):
-    pass
+    host = R1softHost.query.get(host_id)
+    return render_template('host_configuration.html',
+        host=host)
 
 @app.route('/host/<int:host_id>/api-proxy/<namespace>/<method>', methods=['POST'])
 def host_api_proxy(host_id, namespace, method):

@@ -1,0 +1,64 @@
+{% extends 'host_base.html' %}
+{% block title %}{{ host.hostname }} - Agents{% endblock %}
+{% block host_content %}
+<div class="row">
+    <h2>
+        Agents
+        <input id="agents-filter-input" class="pull-right" type="text" placeholder="Search..." data-column="2,3">
+    </h2>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="agents-list-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Hostname</th>
+                        <th>Description</th>
+                        <th>Agent Version</th>
+                        <th>DB Addon Enabled</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for agent in agents %}
+                    <tr>
+                        <td>
+                            {% if agent.osType == 'LINUX' %}
+                            <i title="{{ agent.osType }}" class="fa fa-linux fa-lg"></i>
+                            {% else %}
+                            <i title="{{ agent.osType }}" class="fa fa-question-circle fa-lg"></i>
+                            {% endif %}
+                        </td>
+                        <td><a href="{{ url_for('agent_details', host_id=host.id, agent_uuid=agent.id) }}">{{ agent.hostname }}</a></td>
+                        <td>{{ agent.description }}</td>
+                        <td>{{ agent.lastKnownAgentVersion }}</td>
+                        <td>
+                            {% if agent.databaseAddOnEnabled %}
+                            <span class="label label-success">Yes</span>
+                            {% else %}
+                            <span class="label label-danger">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block customjs %}
+<script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
+<script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
+<script>
+    $(function () {
+        var table = $("#agents-list-table").tablesorter({
+            sortList: [[1,0], [2,0]],
+            widgets: ["filter"],
+            widgetOptions: {
+                filter_external: $("#agents-filter-input"),
+                filter_columnFilters: false,
+            }
+        })
+    });
+</script>
+{% endblock %}
