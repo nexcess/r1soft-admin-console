@@ -25,8 +25,7 @@ from flask.ext.migrate import Migrate, MigrateCommand
 from r1soft.cdp3 import CDP3Client
 from humanize import naturalsize
 from suds.sudsobject import asdict
-from types import *
-
+import datetime
 
 app = Flask(__name__)
 app.config.from_envvar('RAC_SETTINGS')
@@ -77,6 +76,13 @@ class R1softHost(db.Model):
             hostname=self.hostname,
             web_port=self.web_port)
 
+    @property
+    def server_time(self):
+        # we should check with the server to find out what time it thinks it is
+        # and use that for correct time deltas but there doesn't seem to be an
+        # API method to get it so we'll just fake it with this for now
+        return datetime.datetime.now()
+
 class UUIDLink(db.Model):
     id              = db.Column(db.Integer(), primary_key=True)
     host_id         = db.Column(db.Integer(), db.ForeignKey('r1soft_host.id'))
@@ -126,12 +132,27 @@ def soap2native(soap_obj):
         native_obj = soap_obj
     return native_obj
 
+
 def policy2agent(policy):
     link = UUIDLink.query.filter_by(policy_uuid=policy.id).first()
     try:
         return link.agent
     except AttributeError:
         return None
+
+def policy2disksafe(policy):
+    link = UUIDLink.query.filter_by(policy_uuid=policy.id).first()
+    try:
+        return link.disksafe
+    except AttributeError:
+        return None
+
+def sort_tasks(task_list):
+    return sorted(task_list, key=lambda t: t.executionTime)
+
+def inflate_tasks(host, task_id_list):
+    return [t for t in (host.conn.TaskHistory.service.getTaskExecutionContextByID(tid) \
+        for tid in task_id_list) if 'executionTime' in t]
 
 
 @app.context_processor
@@ -148,6 +169,7 @@ def naturalsize_filter(s):
     return naturalsize(s)
 
 @app.route('/')
+@app.route('/dashboard')
 def dashboard():
     return render_template('dashboard.html')
 
@@ -210,6 +232,68 @@ def agent_details(host_id, agent_uuid):
         host=host,
         links=links,
         agent=agent)
+
+@app.route('/policy-failures/')
+def policy_failures_collection():
+    return render_template('policy_failures_collection.html')
+
+@app.route('/policy-failures/host/<int:host_id>/policies')
+def policy_failures_collection_data(host_id):
+    host = R1softHost.query.get(host_id)
+    policies = host.conn.Policy2.service.getPolicies()
+    data = {
+        'stuck': False,
+        'last_successful': None,
+        'policy_data': {},
+    }
+
+    for (policy, agent) in ((p, policy2agent(p)) for p in policies):
+        if agent is None: continue
+        policy_data = {
+            'name': policy.name,
+            'hostname': agent.hostname,
+            'description': agent.description,
+            'timestamp': None,
+            'state': None,
+            'url_agent_details': url_for('agent_details', host_id=host.id, agent_uuid=agent.id),
+        }
+
+        task_ids_by_state = lambda state: host.conn.TaskHistory.service.getTaskExecutionContextIDs( \
+            agents=[agent.id], taskTypes=['DATA_PROTECTION_POLICY'], taskStates=[state])
+
+        if not policy.enabled:
+            policy_data['state'] = 'disabled'
+        else:
+            if policy.state in ('OK', 'ALERT'):
+                # latest policy run was successful (possibly with alerts)
+                policy_data['state'] = policy.state.lower()
+                running_task_ids = task_ids_by_state('RUNNING')
+                if running_task_ids:
+                    running_tasks = sort_tasks(inflate_tasks(host, running_task_ids))
+                    run_time = host.server_time - running_tasks[-1].executionTime.replace(microsecond=0)
+                    if (abs(run_time.days * (60 * 60 * 24)) + run_time.seconds) > app.config['R1SOFT_STUCK_TIMEOUT']:
+                        data['stuck'] = True
+                        policy_data['timestamp'] = str(running_tasks[-1].executionTime.replace(microsecond=0))
+                        policy_data['state'] = 'stuck'
+                if not data['stuck'] and (data['last_successful'] is None or \
+                        data['last_successful'] < policy.lastReplicationRunTime):
+                    data['last_successful'] = policy.lastReplicationRunTime.replace(microsecond=0)
+
+            elif policy.state == 'ERROR':
+                # latest policy run had an error
+                finished_task_ids = task_ids_by_state('FINISHED')
+                if finished_task_ids:
+                    finished_tasks = sort_tasks(inflate_tasks(host, finished_task_ids))
+                    policy_data['timestamp'] = finished_tasks[-1].executionTime.replace(microsecond=0)
+                else:
+                    policy_data['timestamp'] = '> 30 days'
+                policy_data['state'] = 'error'
+            else:
+                # policy.state == 'UKNOWN' and policy hasn't been run before
+                policy_data['state'] = 'new'
+        data['policy_data'][policy.id] = policy_data
+
+    return jsonify(data)
 
 
 if __name__ == '__main__':

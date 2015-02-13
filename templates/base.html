@@ -28,8 +28,8 @@
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                        <li class="dropdown">
+                        <li class="{% block dashboard_active %}{% endblock %}"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li class="dropdown {% block host_details_active %}{% endblock %}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">CDP Hosts <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
                             {% for host in NAV_hosts %}
@@ -37,7 +37,8 @@
                             {% endfor %}
                             </ul>
                         </li>
-                        <li><a href="{{ url_for('agent_collection') }}">Agent List</a></li>
+                        <li class="{% block agent_collection_active %}{% endblock %}"><a href="{{ url_for('agent_collection') }}">Agent List</a></li>
+                        <li class="{% block policy_failures_collection_active %}{% endblock %}"><a href="{{ url_for('policy_failures_collection') }}">Policy Failures</a></li>
                     </ul>
                 </div>
             </div>

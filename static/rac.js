@@ -17,15 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/**
- * Shamelessly taken because I hate JS
- * @link http://kilianvalkhof.com/2010/javascript/how-to-build-a-fast-simple-list-filter-with-jquery/
- */
-
- function agent_collection_updateAgentList(idx, host) {
+function agent_collection_updateAgentList(idx, host) {
     $("#host-group-item-"+host.id).attr({class: "list-group-item list-group-item-default"});
     $("#host-spinner-"+host.id).show();
-    $.getJSON(host.url_list_clients_json,
+    $.getJSON(host.url_agent_collection_data,
         function(response_data) {
             $.each(response_data, function(policy_id, data) {
                 if(!data.agent) {
@@ -36,7 +31,7 @@
                     type = $("<td>"),
                     hostname = $("<td>").text(data.agent.hostname),
                     description = $("<td>").text(data.agent.description),
-                    cdp_host = $("<td>").html("<a href=\""+host.external_link+"\">"+host.hostname+"</a>"),
+                    cdp_host = $("<td>").html("<a href=\""+host.url_external_link+"\">"+host.hostname+"</a>"),
                     rp_limit = $("<td>").text(data.policy.recoveryPointLimit),
                     db_module = $("<td>"),
                     state = $("<td>").text(data.policy.state);
@@ -68,7 +63,7 @@
                         break;
                 }
                 if(!data.policy.enabled) {
-                    $(row.attr({class: "default"}));
+                    $(row).attr({class: "default"});
                 }
 
                 $.each([type, hostname, description, cdp_host, rp_limit, db_module, state],
@@ -78,10 +73,11 @@
                 $(row).appendTo($("#agents-list-table"));
             });
 
-            $("#host-group-item-"+host.id).addClass("list-group-item-success");
             $("#agents-list-table").trigger("update");
         }
-    ).fail(function() {
+    ).done(function() {
+        $("#host-group-item-"+host.id).addClass("list-group-item-success");
+    }).fail(function() {
         $("#host-group-item-"+host.id).addClass("list-group-item-danger")
             .click(function() {
                 agent_collection_updateAgentList(idx, host)
@@ -89,4 +85,53 @@
     }).always(function() {
         $("#host-spinner-"+host.id).hide();
     });
- }
+}
+
+function policy_failures_collection_updatePolicyList(idx, host) {
+    $("#host-group-item-"+host.id).attr({class: "list-group-item list-group-item-default"});
+    $("#host-spinner-"+host.id).show();
+    $.getJSON(host.url_policy_failures_collection_data,
+        function(response_data) {
+            $.each(response_data.policy_data, function(policy_id, result) {
+                var row = $("<tr>").attr({id: policy_id}),
+                    name = $("<td>").html("<a href=\""+result.url_agent_details+"\">"+result.name+"</a>"),
+                    description = $("<td>").text(result.description),
+                    cdp_host = $("<td>").html("<a href=\""+host.url_external_link+"\">"+host.hostname+"</a>"),
+                    timestamp = $("<td>").text(result.timestamp),
+                    state = $("<td>").text(result.state);
+                switch(result.state) {
+                    case "ok":
+                    case "alert":
+                        return;
+                        break;
+                    case "error":
+                        $(row).attr({class: "danger"});
+                        break;
+                    case "stuck":
+                        $(row).attr({class: "primary"});
+                        break;
+                    case "disabled":
+                        $(row).attr({class: "default"});
+                        break;
+                }
+
+                $.each([name, description, cdp_host, state, timestamp],
+                    function(i, v) {
+                        $(row).append(v);
+                    });
+                $(row).appendTo($("#policy-list-table"));
+            });
+
+            $("#policy-list-table").trigger("update");
+        }
+    ).done(function() {
+        $("#host-group-item-"+host.id).addClass("list-group-item-success");
+    }).fail(function() {
+        $("#host-group-item-"+host.id).addClass("list-group-item-danger")
+            .click(function() {
+                agent_collection_updateAgentList(idx, host)
+            });
+    }).always(function() {
+        $("#host-spinner-"+host.id).hide();
+    });
+}
