@@ -24,6 +24,10 @@ body {
     padding-top: 55px;
 }
 
+.footer {
+    margin-top: 1em;
+}
+
 div.progress > div.progress-bar {
     min-width: 12%;
 }

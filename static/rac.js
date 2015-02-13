@@ -152,3 +152,19 @@ function policy_failures_collection_updatePolicyList(idx, host) {
         $("#host-spinner-"+host.id).removeClass("fa-spin");
     });
 }
+
+function addFlashMessage(status, content) {
+    var message = $("<div>").attr({
+        class: "alert alert-dismissable alert-"+status,
+        role: "alert",
+    }).append($("<button>").attr({
+        type: "button",
+        class: "close",
+        'data-dismiss': "alert",
+        'aria-label': "Close",
+    }).append($("<i>").attr({
+        class: "fa fa-close",
+        'aria-hidden': "true",
+    }))).append(content);
+    $("#message-area").append(message);
+}
