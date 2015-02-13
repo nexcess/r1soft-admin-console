@@ -100,7 +100,7 @@ function policy_failures_collection_updatePolicyList(idx, host) {
         function(response_data) {
             if(response_data.stuck) {
                 addFlashMessage("danger", "<strong>"+host.hostname+"</strong> stuck since " +
-                    $.format.date(new Date(response_data.last_successfull), "yyyy-MM-dd HH:mm:ss"));
+                    $.format.date(new Date(response_data.last_successful), "yyyy-MM-dd HH:mm:ss"));
             }
             $.each(response_data.policy_data, function(policy_id, result) {
                 var row = $("<tr>").attr({id: policy_id}),
