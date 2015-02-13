@@ -273,7 +273,7 @@ def policy_failures_collection_data(host_id):
                     run_time = host.server_time - running_tasks[-1].executionTime.replace(microsecond=0)
                     if (abs(run_time.days * (60 * 60 * 24)) + run_time.seconds) > app.config['R1SOFT_STUCK_TIMEOUT']:
                         data['stuck'] = True
-                        policy_data['timestamp'] = str(running_tasks[-1].executionTime.replace(microsecond=0))
+                        policy_data['timestamp'] = running_tasks[-1].executionTime.replace(microsecond=0)
                         policy_data['state'] = 'stuck'
                 if not data['stuck'] and (data['last_successful'] is None or \
                         data['last_successful'] < policy.lastReplicationRunTime):

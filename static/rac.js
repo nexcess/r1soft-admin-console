@@ -20,6 +20,7 @@
 function agent_collection_updateAgentList(idx, host) {
     $("#host-group-item-"+host.id).attr({class: "list-group-item list-group-item-default"});
     $("#host-spinner-"+host.id).show();
+    $("#host-spinner-"+host.id).addClass("fa-spin");
     $.getJSON(host.url_agent_collection_data,
         function(response_data) {
             $.each(response_data, function(policy_id, data) {
@@ -77,19 +78,21 @@ function agent_collection_updateAgentList(idx, host) {
         }
     ).done(function() {
         $("#host-group-item-"+host.id).addClass("list-group-item-success");
+        $("#host-spinner-"+host.id).hide();
     }).fail(function() {
         $("#host-group-item-"+host.id).addClass("list-group-item-danger")
             .click(function() {
                 agent_collection_updateAgentList(idx, host)
             });
     }).always(function() {
-        $("#host-spinner-"+host.id).hide();
+        $("#host-spinner-"+host.id).removeClass("fa-spin");
     });
 }
 
 function policy_failures_collection_updatePolicyList(idx, host) {
     $("#host-group-item-"+host.id).attr({class: "list-group-item list-group-item-default"});
     $("#host-spinner-"+host.id).show();
+    $("#host-spinner-"+host.id).addClass("fa-spin");
     $.getJSON(host.url_policy_failures_collection_data,
         function(response_data) {
             $.each(response_data.policy_data, function(policy_id, result) {
@@ -97,8 +100,21 @@ function policy_failures_collection_updatePolicyList(idx, host) {
                     name = $("<td>").html("<a href=\""+result.url_agent_details+"\">"+result.name+"</a>"),
                     description = $("<td>").text(result.description),
                     cdp_host = $("<td>").html("<a href=\""+host.url_external_link+"\">"+host.hostname+"</a>"),
-                    timestamp = $("<td>").text(result.timestamp),
+                    timestamp = $("<td>"),
                     state = $("<td>").text(result.state);
+                var timestamp_str = "";
+                switch(result.timestamp) {
+                    case null:
+                        timestamp_str = "N/A";
+                        break;
+                    case "> 30 days":
+                        timestamp_str = result.timestamp;
+                        break;
+                    default:
+                        timestamp_str = $.format.date(new Date(result.timestamp),
+                            "yyyy-MM-dd HH:mm:ss");
+                }
+                $(timestamp).text(timestamp_str);
                 switch(result.state) {
                     case "ok":
                     case "alert":
@@ -126,12 +142,13 @@ function policy_failures_collection_updatePolicyList(idx, host) {
         }
     ).done(function() {
         $("#host-group-item-"+host.id).addClass("list-group-item-success");
+        $("#host-spinner-"+host.id).removeClass("fa-spin");
+        $("#host-spinner-"+host.id).hide();
     }).fail(function() {
         $("#host-group-item-"+host.id).addClass("list-group-item-danger")
             .click(function() {
                 agent_collection_updateAgentList(idx, host)
             });
-    }).always(function() {
-        $("#host-spinner-"+host.id).hide();
+        $("#host-spinner-"+host.id).removeClass("fa-spin");
     });
 }

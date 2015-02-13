@@ -14,7 +14,7 @@
                         <th>Description</th>
                         <th>CDP Host</th>
                         <th>State</th>
-                        <th>Timestamp</th>
+                        <th>Latest Backup</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,7 +27,7 @@
             {% for host in NAV_hosts %}
                 <li id="host-group-item-{{ host.id }}" class="list-group-item">
                     {{ host.hostname }}
-                    <i id="host-spinner-{{ host.id }}" class="fa fa-spinner fa-pulse pull-right"></i>
+                    <i id="host-spinner-{{ host.id }}" class="fa fa-refresh pull-right"></i>
                 </li>
             {% endfor %}
             </ul>
@@ -54,7 +54,7 @@
 
     $(function() {
         var table = $("#policy-list-table").tablesorter({
-            sortList: [[0,0],[1,0]],
+            sortList: [[1,0]],
             widgets: ["filter"],
             widgetOptions: {
                 filter_external: $("#policy-filter-input"),
