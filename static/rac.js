@@ -26,6 +26,8 @@ function agent_collection_updateAgentList(idx, host) {
             $.each(response_data, function(policy_id, data) {
                 if(!data.agent) {
                     $("#host-group-item-"+host.id).addClass("list-group-item-warning");
+                    addFlashMessage("warning", "Couldn't find agent for policy: " +
+                        data.policy.name + " @ " + host.hostname + "!");
                     return;
                 }
                 var row = $("<tr>").attr({id: policy_id}),
@@ -84,6 +86,7 @@ function agent_collection_updateAgentList(idx, host) {
             .click(function() {
                 agent_collection_updateAgentList(idx, host)
             });
+        addFlashMessage("danger", "<strong>"+host.hostname+"</strong> failed to load");
     }).always(function() {
         $("#host-spinner-"+host.id).removeClass("fa-spin");
     });
@@ -95,6 +98,10 @@ function policy_failures_collection_updatePolicyList(idx, host) {
     $("#host-spinner-"+host.id).addClass("fa-spin");
     $.getJSON(host.url_policy_failures_collection_data,
         function(response_data) {
+            if(response_data.stuck) {
+                addFlashMessage("danger", "<strong>"+host.hostname+"</strong> stuck since " +
+                    $.format.date(new Date(response_data.last_successfull), "yyyy-MM-dd HH:mm:ss"));
+            }
             $.each(response_data.policy_data, function(policy_id, result) {
                 var row = $("<tr>").attr({id: policy_id}),
                     name = $("<td>").html("<a href=\""+result.url_agent_details+"\">"+result.name+"</a>"),
@@ -150,6 +157,7 @@ function policy_failures_collection_updatePolicyList(idx, host) {
                 agent_collection_updateAgentList(idx, host)
             });
         $("#host-spinner-"+host.id).removeClass("fa-spin");
+        addFlashMessage("danger", "<strong>"+host.hostname+"</strong> failed to load");
     });
 }
 

@@ -45,8 +45,16 @@
         </nav>
         <div id="content" class="container" role="main">
             <div id="message-area-container" class="col-md-12 row">
-                <div id="message-area" class="col-md-offset-3 col-md-6">
-                    {% block message_area %}{% endblock %}
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" data-toggle="collapse" data-target="#message-area">
+                        <i id="message-area-toggle" class="fa fa-plus-square pull-right"></i>
+                        <h4 class="panel-title">
+                            Alerts <span id="message-count" class="badge"></span>
+                        </h4>
+                    </div>
+                    <div id="message-area" class="panel-collapse collapse" role="tabpanel">
+                        {% block message_area %}{% endblock %}
+                    </div>
                 </div>
             </div>
         {% block content %}{% endblock %}
@@ -62,6 +70,31 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
         <script src="{{ url_for('static', filename='jquery.dateFormat.js') }}"></script>
         <script src="{{ url_for('static', filename='rac.js') }}"></script>
+        <script>
+            $("#message-area").on("hidden.bs.collapse", function() {
+                $("#message-area-toggle").attr({
+                    class: "fa fa-plus-square pull-right"
+                });
+            }).on("shown.bs.collapse", function() {
+                $("#message-area-toggle").attr({
+                    class: "fa fa-minus-square pull-right"
+                });
+            }).on("DOMSubtreeModified", function() {
+                var messageCount = $("#message-area>div.alert").length;
+                if(messageCount > 0) {
+                    $("#message-count").text(messageCount);
+                    $("#message-area-container").show();
+                } else {
+                    $("#message-count").text("");
+                    $("#message-area-container").hide();
+                }
+            });
+            if($("#message-area>div.alert").length > 0) {
+                $("#message-count").text($("#message-area>div.alert").length);
+            } else {
+                $("#message-area-container").hide();
+            }
+        </script>
         {% block customjs %}{% endblock %}
     </body>
 </html>
