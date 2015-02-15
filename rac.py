@@ -18,6 +18,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+# This needs to be here to fix everything imported afterwards
+# which is mainly suds in r1soft.cdp3
+import gevent.monkey
+gevent.monkey.patch_all()
+
 from flask import Flask, url_for, render_template, jsonify, request
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.script import Manager
@@ -26,6 +31,7 @@ from r1soft.cdp3 import CDP3Client
 from humanize import naturalsize
 from suds.sudsobject import asdict
 import datetime
+import gevent.pool
 
 app = Flask(__name__)
 app.config.from_envvar('RAC_SETTINGS')
@@ -33,7 +39,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
-
+API_POOL = gevent.pool.Pool(size=app.config['R1SOFT_API_CONCURRENCY'])
 
 class R1softHost(db.Model):
     id          = db.Column(db.Integer(), primary_key=True)
@@ -151,8 +157,8 @@ def sort_tasks(task_list):
     return sorted(task_list, key=lambda t: t.executionTime)
 
 def inflate_tasks(host, task_id_list):
-    return [t for t in (host.conn.TaskHistory.service.getTaskExecutionContextByID(tid) \
-        for tid in task_id_list) if 'executionTime' in t]
+    func = host.conn.TaskHistory.service.getTaskExecutionContextByID
+    return [t for t in API_POOL.map(func, task_id_list) if 'executionTime' in t]
 
 
 @app.context_processor
@@ -181,8 +187,8 @@ def host_collection():
 @app.route('/host/<int:host_id>/dashboard')
 def host_details(host_id):
     host = R1softHost.query.get(host_id)
-    disks = sorted([host.conn.StorageDisk.service.getStorageDiskByPath(p) \
-            for p in host.conn.StorageDisk.service.getStorageDiskPaths()],
+    disks = sorted(API_POOL.map(host.conn.StorageDisk.service.getStorageDiskByPath,
+            host.conn.StorageDisk.service.getStorageDiskPaths()),
         key=lambda i: i.capacityBytes,
         reverse=True)[:3]
     return render_template('host_overview.html',
@@ -260,8 +266,8 @@ def agent_collection_data(host_id):
     host = R1softHost.query.get(host_id)
     policies = host.conn.Policy2.service.getPolicies()
     return jsonify(soap2native({
-        p.id: {'policy': p, 'agent': policy2agent(p)} \
-            for p in policies
+        p.id: {'policy': p, 'agent': a} \
+            for a, p in zip(API_POOL.map(policy2agent, policies), policies)
         }))
 
 @app.route('/host/<int:host_id>/agent/<agent_uuid>/')
@@ -287,8 +293,7 @@ def policy_failures_collection_data(host_id):
         'last_successful': None,
         'policy_data': {},
     }
-
-    for (policy, agent) in ((p, policy2agent(p)) for p in policies):
+    for (policy, agent) in zip(policies, API_POOL.map(policy2agent, policies)):
         if agent is None: continue
         policy_data = {
             'name': policy.name,
