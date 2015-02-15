@@ -2,12 +2,60 @@
 {% block title %}{{ host.hostname }} - Task History{% endblock %}
 {% block host_content %}
 <div class="row">
-
+    <h2>Task History</h2>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="tasks-list-table" class="table">
+                <thead>
+                    <tr>
+                        <th>State</th>
+                        <th>Type</th>
+                        <th>Name</th>
+                        <th>Agent</th>
+                        <th>Scheduled Time</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Run Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for task in tasks %}
+                {% if task.taskType %}
+                    <tr id="{{ task.id }}">
+                        <td>{{ task.taskState|iconize }}</td>
+                        <td>{{ task.taskType|iconize }}</td>
+                        <td>{{ task.taskType|replace('_', ' ')|title }}</td>
+                        <td>{{ task.agentId }}</td>
+                        <td>{{ task.scheduledTime.replace(microsecond=0) }}</td>
+                        <td>{{ task.executionTime.replace(microsecond=0) }}</td>
+                        <td>{{ task.completionTime.replace(microsecond=0) }}</td>
+                        {% set runtime = task.completionTime - task.executionTime %}
+                        <td>{{ runtime.__class__(runtime.days, runtime.seconds) }}</td>
+                    </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}
 {% block customjs %}
 <script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
 <script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
+    $(function () {
+        $("#nav-filter-input").prop("disabled", false).attr({
+            'data-column': "2,3"
+        });
+        var table = $("#tasks-list-table").tablesorter({
+            sortList: [[5,1]],
+            widgets: ["filter"],
+            widgetOptions: {
+                filter_external: $("#nav-filter-input"),
+                filter_columnFilters: false,
+            }
+        })
+    });
 </script>
 {% endblock %}

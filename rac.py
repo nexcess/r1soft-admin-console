@@ -64,17 +64,21 @@ ICONIZE_MAP = {
     'MERGE_INTERRUPTED':'',
 
     # TaskState
-    'FINISHED':         '',
-    'RUNNING':          '',
-    'QUEUED':           '',
-    'CANCELLED':        '',
-    'DUPLICATE':        '',
+    'FINISHED':         'fa fa-check-circle-o text-success',
+    'RUNNING':          'fa fa-spinner fa-spin text-primary',
+    'QUEUED':           'fa fa-pause text-info',
+    'CANCELLED':        'fa fa-times-circle-o text-danger',
+    'DUPLICATE':        'fa fa-files-o text-warning',
 
     # TaskType
-    'DATA_PROTECTION_POLICY':   '',
-    'FILE_RESTORE':     '',
-    'MERGE_RECOVERY_POINTS':    '',
-    'VACUUM':           '',
+    'DATA_PROTECTION_POLICY':   'fa fa-clipboard',
+    'FILE_RESTORE':     'fa fa-files-o text-info',
+    'MERGE_RECOVERY_POINTS':    'fa fa-th-large text-primary',
+    'EMAIL_REPORT':     'fa fa-envelope-o text-primary',
+    'SYSTEM':           'fa fa-cogs',
+    'TASK_HISTORY_CLEANUP':     'fa fa-expand text-success',
+
+
 
     # UserType
     'SUPER_USER':       '',
@@ -211,7 +215,7 @@ def sort_tasks(task_list):
 
 def inflate_tasks(host, task_id_list):
     func = host.conn.TaskHistory.service.getTaskExecutionContextByID
-    return [t for t in API_POOL.map(func, task_id_list) if 'executionTime' in t]
+    return API_POOL.map(func, task_id_list)
 
 
 @app.context_processor
@@ -227,7 +231,7 @@ def inject_obj_attr_filter():
 def iconize_filter(s):
     icon_opts = ICONIZE_MAP.get(s, ICONIZE_MAP.get('UNKNOWN'))
     return Markup('<i title="%s" class="%s fa-lg"></i>' % \
-        (Markup.escape(str(s).title()), icon_opts))
+        (Markup.escape(str(s).replace('_', ' ').title()), icon_opts))
 
 @app.template_filter('naturalsize')
 def naturalsize_filter(s):
@@ -297,8 +301,13 @@ def host_recovery_points(host_id):
 @app.route('/host/<int:host_id>/task-history')
 def host_task_history(host_id):
     host = R1softHost.query.get(host_id)
+    tasks = inflate_tasks(host,
+        host.conn.TaskHistory.service.getTaskExecutionContextIDs(
+            scheduledStart=str(datetime.date.today() - \
+                datetime.timedelta(app.config['R1SOFT_TASK_HISTORY_DAYS']))))
     return render_template('host_task_history.html',
-        host=host)
+        host=host,
+        tasks=tasks)
 
 @app.route('/host/<int:host_id>/configuration')
 def host_configuration(host_id):
