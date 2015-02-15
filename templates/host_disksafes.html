@@ -19,13 +19,7 @@
                 <tbody>
                 {% for disksafe in disksafes %}
                     <tr id="{{ disksafe.id }}">
-                        <td>
-                            {% if disksafe.open %}
-                            <i class="fa fa-check fa-lg"></i>
-                            {% else %}
-                            <i class="fa fa-times fa-lg"></i>
-                            {% endif %}
-                        </td>
+                        <td>{{ disksafe.open|iconize }}</td>
                         <td>{{ disksafe.description }}</td>
                         <td>{{ disksafe.recoveryPointCount }}</td>
                         <td>{{ disksafe.deviceCount }}</td>

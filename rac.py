@@ -23,7 +23,7 @@
 import gevent.monkey
 gevent.monkey.patch_all()
 
-from flask import Flask, url_for, render_template, jsonify, request
+from flask import Flask, url_for, render_template, jsonify, request, Markup
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
@@ -40,6 +40,59 @@ migrate = Migrate(app, db)
 manager = Manager(app)
 manager.add_command('db', MigrateCommand)
 API_POOL = gevent.pool.Pool(size=app.config['R1SOFT_API_CONCURRENCY'])
+
+ICONIZE_MAP = {
+    # AgentType
+    'PHYSICAL':         'fa fa-hdd-o',
+    'VM':               'fa fa-cloud',
+
+    # OSType
+    'WINDOWS':          'fa fa-windows text-info',
+    'LINUX':            'fa fa-linux',
+
+    # PolicyState
+    'OK':               'fa fa-check-circle-o text-success',
+    'ALERT':            'fa fa-exclamation-triangle text-warning',
+
+    # RecoveryPointState
+    'REPLICATING':      '',
+    'AVAILABLE':        '',
+    'MERGING':          '',
+    'MERGED':           '',
+    'LOCKED':           '',
+    'REPLICATION_INTERRUPTED':   '',
+    'MERGE_INTERRUPTED':'',
+
+    # TaskState
+    'FINISHED':         '',
+    'RUNNING':          '',
+    'QUEUED':           '',
+    'CANCELLED':        '',
+    'DUPLICATE':        '',
+
+    # TaskType
+    'DATA_PROTECTION_POLICY':   '',
+    'FILE_RESTORE':     '',
+    'MERGE_RECOVERY_POINTS':    '',
+    'VACUUM':           '',
+
+    # UserType
+    'SUPER_USER':       '',
+    'SUB_USER':         '',
+    'POWER_USER':       '',
+
+    # ReportType
+    'TASK_HISTORY':     '',
+    'SERVER_BACKUP':    '',
+    'QUOTA_ALERT':      '',
+
+    # Special/shared values
+    True:               'fa fa-check text-success',
+    False:              'fa fa-times text-danger',
+    'ERROR':            'fa fa-exclamation-circle text-danger',
+    'UNKNOWN':          'fa fa-question-circle',
+}
+
 
 class R1softHost(db.Model):
     id          = db.Column(db.Integer(), primary_key=True)
@@ -169,6 +222,12 @@ def inject_hosts():
 def inject_obj_attr_filter():
     return {'obj_attr_filter':
         lambda obj_list, attr, value: [o for o in obj_list if getattr(o, attr) == value]}
+
+@app.template_filter('iconize')
+def iconize_filter(s):
+    icon_opts = ICONIZE_MAP.get(s, ICONIZE_MAP.get('UNKNOWN'))
+    return Markup('<i title="%s" class="%s fa-lg"></i>' % \
+        (Markup.escape(str(s).title()), icon_opts))
 
 @app.template_filter('naturalsize')
 def naturalsize_filter(s):

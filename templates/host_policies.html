@@ -20,24 +20,8 @@
                 <tbody>
                 {% for policy in policies %}
                     <tr id="{{ policy.id }}">
-                        <td>
-                            {% if policy.enabled %}
-                            <i class="fa fa-power-off fa-lg text-success"></i>
-                            {% else %}
-                            <i class="fa fa-times-circle-o fa-lg text-danger"></i>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if policy.state == 'OK' %}
-                            <i class="fa fa-check-circle-o fa-lg text-success"></i>
-                            {% elif policy.state == 'ALERT' %}
-                            <i class="fa fa-exclamation-triangle fa-lg text-warning"></i>
-                            {% elif policy.state == 'ERROR' %}
-                            <i class="fa fa-times fa-lg text-danger"></i>
-                            {% else %}
-                            <i class="fa fa-question-circle fa-lg"></i>
-                            {% endif %}
-                        </td>
+                        <td>{{ policy.enabled|iconize }}</td>
+                        <td>{{ policy.state|iconize }}</td>
                         <td>{{ policy.name }}</td>
                         <td>{{ policy.description }}</td>
                         <td>{{ policy.replicationScheduleFrequencyType|capitalize }}</td>

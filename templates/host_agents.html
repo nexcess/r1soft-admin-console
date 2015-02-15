@@ -19,30 +19,12 @@
                 <tbody>
                 {% for agent in agents %}
                     <tr id="{{ agent.id }}">
-                        <td>
-                            {% if agent.osType == 'LINUX' %}
-                            <i title="{{ agent.osType }}" class="fa fa-linux fa-lg"></i>
-                            {% else %}
-                            <i title="{{ agent.osType }}" class="fa fa-question-circle fa-lg"></i>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if agent.agentType == 'PHYSICAL' %}
-                            <i title="{{ agent.agentType }}" class="fa fa-hdd-o fa-lg"></i>
-                            {% else %}
-                            <i title="{{ agent.agentType }}" class="fa fa-cloud fa-lg"></i>
-                            {% endif %}
-                        </td>
+                        <td>{{ agent.osType|iconize }}</td>
+                        <td>{{ agent.agentType|iconize }}</td>
                         <td><a href="{{ url_for('agent_details', host_id=host.id, agent_uuid=agent.id) }}">{{ agent.hostname }}</a></td>
                         <td>{{ agent.description }}</td>
                         <td>{{ agent.lastKnownAgentVersion }}</td>
-                        <td>
-                            {% if agent.databaseAddOnEnabled %}
-                            <span class="label label-success">Yes</span>
-                            {% else %}
-                            <span class="label label-danger">No</span>
-                            {% endif %}
-                        </td>
+                        <td>{{ agent.databaseAddOnEnabled|iconize }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
