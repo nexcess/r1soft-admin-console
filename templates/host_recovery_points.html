@@ -1,13 +1,15 @@
 {% extends 'host_base.html' %}
+{% set active_subnav_element = '#nav-se-host-recovery-points' %}
 {% block title %}{{ host.hostname }} - Recovery Points{% endblock %}
 {% block host_content %}
 <div class="row">
-
+    <h2>Recovery Points</h2>
+    <div class="row">
+        Not Yet Implemented
+    </div>
 </div>
 {% endblock %}
 {% block customjs %}
-<script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
-<script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
 </script>
 {% endblock %}

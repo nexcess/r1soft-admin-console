@@ -1,4 +1,5 @@
 {% extends 'host_base.html' %}
+{% set active_subnav_element = '#nav-se-host-volumes' %}
 {% block title %}{{ host.hostname }} - Volumes{% endblock %}
 {% block host_content %}
 <div class="row">
@@ -32,11 +33,9 @@
 </div>
 {% endblock %}
 {% block customjs %}
-<script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
-<script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
     $(function () {
-        $("#nav-filter-input").prop("disabled", false).attr({
+        $("#nav-filter-input").show().attr({
             'data-column': "0,1,2"
         });
         var table = $("#volumes-list-table").tablesorter({

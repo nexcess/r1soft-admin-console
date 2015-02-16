@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
+{% set active_nav_element = '#nav-e-host' %}
 {% block title %}{{ host.hostname }}{% endblock %}
 {% block content %}
     <div class="row">
         <div class="col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li><a href="{{ url_for('host_details', host_id=host.id) }}">Overview</a></li>
-                <li><a href="{{ url_for('host_volumes', host_id=host.id) }}">Volumes</a></li>
-                <li><a href="{{ url_for('host_agents', host_id=host.id) }}">Agents</a></li>
-                <li><a href="{{ url_for('host_disksafes', host_id=host.id) }}">Disk Safes</a></li>
-                <li><a href="{{ url_for('host_policies', host_id=host.id) }}">Policies</a></li>
-                <li><a href="{{ url_for('host_recovery_points', host_id=host.id) }}">Recovery Points</a></li>
-                <li><a href="{{ url_for('host_task_history', host_id=host.id) }}">Task History</a></li>
-                <li><a href="{{ url_for('host_configuration', host_id=host.id) }}">Configuration</a></li>
+                <li id="nav-se-host-overview"><a href="{{ url_for('host_details', host_id=host.id) }}">Overview</a></li>
+                <li id="nav-se-host-volumes"><a href="{{ url_for('host_volumes', host_id=host.id) }}">Volumes</a></li>
+                <li id="nav-se-host-agents"><a href="{{ url_for('host_agents', host_id=host.id) }}">Agents</a></li>
+                <li id="nav-se-host-disksafes"><a href="{{ url_for('host_disksafes', host_id=host.id) }}">Disk Safes</a></li>
+                <li id="nav-se-host-policies"><a href="{{ url_for('host_policies', host_id=host.id) }}">Policies</a></li>
+                <li id="nav-se-host-recovery-points"><a href="{{ url_for('host_recovery_points', host_id=host.id) }}">Recovery Points</a></li>
+                <li id="nav-se-host-task-history"><a href="{{ url_for('host_task_history', host_id=host.id) }}">Task History</a></li>
+                <li id="nav-se-host-configuration"><a href="{{ url_for('host_configuration', host_id=host.id) }}">Configuration</a></li>
             </ul>
         </div>
         <div class="col-md-10 col-md-offset-2 main">
@@ -29,4 +30,3 @@
         </div>
     </div>
 {% endblock %}
-{% block host_details_active %}active{% endblock %}

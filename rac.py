@@ -93,8 +93,12 @@ ICONIZE_MAP = {
     # Special/shared values
     True:               'fa fa-check text-success',
     False:              'fa fa-times text-danger',
+    '':                 'fa fa-times text-danger',
     'ERROR':            'fa fa-exclamation-circle text-danger',
     'UNKNOWN':          'fa fa-question-circle',
+    'STUCK':            'fa fa-pause text-danger',
+    'DISABLED':         'fa fa-times text-default',
+    'ENABLED':          'fa fa-check text-primary',
 }
 
 
@@ -133,11 +137,19 @@ class R1softHost(db.Model):
         return self._conn
 
     @property
+    def link(self):
+        html = '<a href="{internal_link}">{hostname}</a> ' + \
+            '<a href="{external_link}"><i class="fa fa-lg fa-external-link"></i></a>'
+        return Markup(html.format(internal_link=url_for('host_details', host_id=self.id),
+            hostname=self.hostname,
+            external_link=self.external_link))
+
+    @property
     def external_link(self):
-        return '{scheme}://{hostname}:{web_port}/'.format(
+        return Markup('{scheme}://{hostname}:{web_port}/'.format(
             scheme='https' if self.web_ssl else 'http',
             hostname=self.hostname,
-            web_port=self.web_port)
+            web_port=self.web_port))
 
     @property
     def server_time(self):
@@ -230,8 +242,9 @@ def inject_obj_attr_filter():
 @app.template_filter('iconize')
 def iconize_filter(s):
     icon_opts = ICONIZE_MAP.get(s, ICONIZE_MAP.get('UNKNOWN'))
-    return Markup('<i title="%s" class="%s fa-lg"></i>' % \
-        (Markup.escape(str(s).replace('_', ' ').title()), icon_opts))
+    return Markup('<i title="{title}" class="{icon_opts} fa-lg"><span style="display:none">{title}</span></i>'.format(
+        title=Markup(str(s).replace('_', ' ').title()),
+        icon_opts=icon_opts))
 
 @app.template_filter('naturalsize')
 def naturalsize_filter(s):
@@ -325,19 +338,6 @@ def host_api_proxy(host_id, namespace, method):
     func = lambda: soap_method(**params)
     return jsonify({'response': soap2native(func())})
 
-@app.route('/meta/agents/')
-def agent_collection():
-    return render_template('agent_collection.html')
-
-@app.route('/meta/host/<int:host_id>/agents')
-def agent_collection_data(host_id):
-    host = R1softHost.query.get(host_id)
-    policies = host.conn.Policy2.service.getPolicies()
-    return jsonify(soap2native({
-        p.id: {'policy': p, 'agent': a} \
-            for a, p in zip(API_POOL.map(policy2agent, policies), policies)
-        }))
-
 @app.route('/host/<int:host_id>/agent/<agent_uuid>/')
 def agent_details(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
@@ -348,66 +348,67 @@ def agent_details(host_id, agent_uuid):
         links=links,
         agent=agent)
 
-@app.route('/meta/policy-failures/')
-def policy_failures_collection():
-    return render_template('policy_failures_collection.html')
+@app.route('/policy-directory/')
+def policy_directory_collection():
+    return render_template('policy_directory_collection.html')
 
-@app.route('/meta/policy-failures/host/<int:host_id>/policies')
-def policy_failures_collection_data(host_id):
+@app.route('/policy-directory/host/<int:host_id>/data')
+def policy_directory_collection_data(host_id):
     host = R1softHost.query.get(host_id)
     policies = host.conn.Policy2.service.getPolicies()
-    data = {
-        'stuck': False,
-        'last_successful': None,
-        'policy_data': {},
+    host_data = {
+        'stuck':            False,
+        'last_successful':  None,
     }
-    for (policy, agent) in zip(policies, API_POOL.map(policy2agent, policies)):
-        if agent is None: continue
-        policy_data = {
-            'name': policy.name,
-            'hostname': agent.hostname,
-            'description': agent.description,
-            'timestamp': None,
-            'state': None,
-            'url_agent_details': url_for('agent_details', host_id=host.id, agent_uuid=agent.id),
-        }
+    policy_data = []
 
+    for (agent, policy) in zip(API_POOL.map(policy2agent, policies), policies):
+        if agent is None: continue
+        policy_extra_data = {
+            'real_state':       None,
+            'timestamp':        None,
+        }
         task_ids_by_state = lambda state: host.conn.TaskHistory.service.getTaskExecutionContextIDs( \
             agents=[agent.id], taskTypes=['DATA_PROTECTION_POLICY'], taskStates=[state])
 
         if not policy.enabled:
-            policy_data['state'] = 'disabled'
+            policy_extra_data['real_state'] = 'disabled'
         else:
             if policy.state in ('OK', 'ALERT'):
                 # latest policy run was successful (possibly with alerts)
-                policy_data['state'] = policy.state.lower()
+                policy_extra_data['real_state'] = policy.state.lower()
                 running_task_ids = task_ids_by_state('RUNNING')
                 if running_task_ids:
                     running_tasks = sort_tasks(inflate_tasks(host, running_task_ids))
                     run_time = host.server_time - running_tasks[-1].executionTime.replace(microsecond=0)
                     if (abs(run_time.days * (60 * 60 * 24)) + run_time.seconds) > app.config['R1SOFT_STUCK_TIMEOUT']:
-                        data['stuck'] = True
-                        policy_data['timestamp'] = running_tasks[-1].executionTime.replace(microsecond=0)
-                        policy_data['state'] = 'stuck'
-                if not data['stuck'] and (data['last_successful'] is None or \
-                        data['last_successful'] < policy.lastReplicationRunTime):
-                    data['last_successful'] = policy.lastReplicationRunTime.replace(microsecond=0)
+                        host_data['stuck'] = True
+                        policy_extra_data['timestamp'] = running_tasks[-1].executionTime.replace(microsecond=0)
+                        policy_extra_data['real_state'] = 'stuck'
+                if not host_data['stuck'] and (host_data['last_successful'] is None or \
+                        host_data['last_successful'] < policy.lastReplicationRunTime):
+                    host_data['last_successful'] = policy.lastReplicationRunTime.replace(microsecond=0)
+                    policy_extra_data['timestamp'] = policy.lastReplicationRunTime.replace(microsecond=0)
 
             elif policy.state == 'ERROR':
                 # latest policy run had an error
                 finished_task_ids = task_ids_by_state('FINISHED')
                 if finished_task_ids:
                     finished_tasks = sort_tasks(inflate_tasks(host, finished_task_ids))
-                    policy_data['timestamp'] = finished_tasks[-1].executionTime.replace(microsecond=0)
+                    policy_extra_data['timestamp'] = finished_tasks[-1].executionTime.replace(microsecond=0)
                 else:
-                    policy_data['timestamp'] = '> 30 days'
-                policy_data['state'] = 'error'
+                    policy_extra_data['timestamp'] = '> 30 days'
+                policy_extra_data['real_state'] = 'error'
             else:
                 # policy.state == 'UKNOWN' and policy hasn't been run before
-                policy_data['state'] = 'new'
-        data['policy_data'][policy.id] = policy_data
+                policy_extra_data['real_state'] = 'new'
 
-    return jsonify(data)
+        policy_data.append((agent, policy, policy_extra_data))
+
+    return render_template('policy_directory_collection_data.html',
+        host=host,
+        host_extra_data=host_data,
+        collection_data=policy_data)
 
 
 if __name__ == '__main__':

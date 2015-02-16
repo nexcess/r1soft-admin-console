@@ -1,4 +1,5 @@
 {% extends 'host_base.html' %}
+{% set active_subnav_element = '#nav-se-host-policies' %}
 {% block title %}{{ host.hostname }} - Policies{% endblock %}
 {% block host_content %}
 <div class="row">
@@ -36,11 +37,9 @@
 </div>
 {% endblock %}
 {% block customjs %}
-<script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
-<script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
 <script>
     $(function () {
-        $("#nav-filter-input").prop("disabled", false).attr({
+        $("#nav-filter-input").show().attr({
             'data-column': "2,3"
         });
         var table = $("#policies-list-table").tablesorter({

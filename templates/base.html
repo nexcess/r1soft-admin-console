@@ -30,8 +30,8 @@
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav navbar-right">
-                        <li class="{% block dashboard_active %}{% endblock %}"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-                        <li class="dropdown {% block host_details_active %}{% endblock %}">
+                        <li id="nav-e-dashboard"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li id="nav-e-host" class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">CDP Hosts <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
                             {% for host in NAV_hosts %}
@@ -39,10 +39,9 @@
                             {% endfor %}
                             </ul>
                         </li>
-                        <li class="{% block agent_collection_active %}{% endblock %}"><a href="{{ url_for('agent_collection') }}">Agent List</a></li>
-                        <li class="{% block policy_failures_collection_active %}{% endblock %}"><a href="{{ url_for('policy_failures_collection') }}">Policy Failures</a></li>
-                        <li class="{% block settings_active %}{% endblock %}"><a href="#">Settings</a></li>
-                        <li>{% block profile_link %}<a href="#">Login</a>{% endblock %}</li>
+                        <li id="nav-e-policy-directory"><a href="{{ url_for('policy_directory_collection') }}">Policy Directory</a></li>
+                        <li id="nav-e-settings"><a href="#">Settings</a></li>
+                        <li id="nav-e-login">{% block profile_link %}<a href="#">Login</a>{% endblock %}</li>
                     </ul>
                     <form action="#" class="navbar-form navbar-right">
                         <input id="nav-filter-input" type="text" class="form-control" placeholder="Search...">
@@ -66,18 +65,11 @@
             </div>
             {% block content %}{% endblock %}
         </div>
-        <!--
-        <div id="footer" class="container-fluid footer well" role="footer">
-        {% block footer %}
-            <div class="text-center">
-                &copy; Copyright 2015 by <a href="http://www.nexcess.net/">Nexcess.net</a>.
-            </div>
-        {% endblock %}
-        </div>
-        -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
         <script src="{{ url_for('static', filename='jquery.dateFormat.js') }}"></script>
+        <script src="{{ url_for('static', filename='jquery.tablesorter.js') }}"></script>
+        <script src="{{ url_for('static', filename='jquery.tablesorter.widgets.js') }}"></script>
         <script src="{{ url_for('static', filename='rac.js') }}"></script>
         <script>
             $(function() {
@@ -104,7 +96,15 @@
                 } else {
                     $("#message-area-container").hide();
                 }
-                $("#nav-filter-input").prop("disabled", true);
+                $("#nav-filter-input").hide();
+                var active_nav_element = "{{ active_nav_element }}";
+                var active_subnav_element = "{{ active_subnav_element }}";
+                if(active_nav_element) {
+                    $(active_nav_element).addClass("active");
+                }
+                if(active_subnav_element) {
+                    $(active_subnav_element).addClass("active");
+                }
             });
         </script>
         {% block customjs %}{% endblock %}
