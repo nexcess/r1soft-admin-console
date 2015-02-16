@@ -1,0 +1,19 @@
+{% for agent, policy, metadata in collection_data %}
+{% if agent %}
+<tr id="{{ policy.id }}" class="{% if metadata['real_state'] == 'stuck' %}danger{% endif %}">
+    <td>{{ agent.osType|iconize }}</td>
+    <td>{{ agent.agentType|iconize }}</td>
+    <td><a href="{{ url_for('agent_details', host_id=host.id, agent_uuid=agent.id) }}">{{ agent.hostname }}</a></td>
+    <td>{{ agent.description }}</td>
+    <td>{{ host.link }}</td>
+    <td>{{ policy.recoveryPointLimit }}</td>
+    <td>{{ (agent.databaseAddOnEnabled and (policy.databaseInstanceList|length > 0))|iconize }}</td>
+    <td>{{ metadata['real_state']|upper|iconize }}</td>
+    {% if metadata['timestamp'] %}
+    <td>{{ metadata['timestamp'] }}</td>
+    {% else %}
+    <td>N/A</td>
+    {% endif %}
+</tr>
+{% endif %}
+{% endfor %}

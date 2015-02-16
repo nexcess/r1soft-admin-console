@@ -162,18 +162,25 @@ class UUIDLink(db.Model):
     id              = db.Column(db.Integer(), primary_key=True)
     host_id         = db.Column(db.Integer(), db.ForeignKey('r1soft_host.id'))
     agent_uuid      = db.Column(db.String(36), nullable=False)
+    agent_hostname  = db.Column(db.String(255))
     disksafe_uuid   = db.Column(db.String(36), nullable=False)
+    disksafe_desc   = db.Column(db.String(255))
     policy_uuid     = db.Column(db.String(36), nullable=False, index=True)
+    policy_name     = db.Column(db.String(255))
 
     __table_args__  = (db.UniqueConstraint('agent_uuid', 'disksafe_uuid', 'policy_uuid', name='uuid_constraint'),)
 
     _host           = None
 
-    def __init__(self, host_id, agent_uuid, disksafe_uuid, policy_uuid):
+    def __init__(self, host_id, agent_uuid, disksafe_uuid, policy_uuid,
+            agent_hostname='', disksafe_desc='', policy_name=''):
         self.host_id = host_id
         self.agent_uuid = agent_uuid
+        self.agent_hostname = agent_hostname
         self.disksafe_uuid = disksafe_uuid
+        self.disksafe_desc = disksafe_desc
         self.policy_uuid = policy_uuid
+        self.policy_name = policy_name
 
     @property
     def host(self):
@@ -255,12 +262,7 @@ def naturalsize_filter(s):
 def dashboard():
     return render_template('dashboard.html')
 
-@app.route('/host/')
-def host_collection():
-    return render_template('host_collection.html')
-
-@app.route('/host/<int:host_id>')
-@app.route('/host/<int:host_id>/dashboard')
+@app.route('/host/<int:host_id>/')
 def host_details(host_id):
     host = R1softHost.query.get(host_id)
     disks = sorted(API_POOL.map(host.conn.StorageDisk.service.getStorageDiskByPath,
@@ -276,7 +278,7 @@ def host_details(host_id):
         disks=disks,
         agents=host.conn.Agent.service.getAgents())
 
-@app.route('/host/<int:host_id>/volumes')
+@app.route('/host/<int:host_id>/volumes/')
 def host_volumes(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host_volumes.html',
@@ -284,34 +286,34 @@ def host_volumes(host_id):
         host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
         volumes=host.conn.Volume.service.getVolumes())
 
-@app.route('/host/<int:host_id>/agents')
+@app.route('/host/<int:host_id>/agents/')
 def host_agents(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host_agents.html',
         host=host,
         agents=host.conn.Agent.service.getAgents())
 
-@app.route('/host/<int:host_id>/disksafes')
+@app.route('/host/<int:host_id>/disksafes/')
 def host_disksafes(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host_disksafes.html',
         host=host,
         disksafes=host.conn.DiskSafe.service.getDiskSafes())
 
-@app.route('/host/<int:host_id>/policies')
+@app.route('/host/<int:host_id>/policies/')
 def host_policies(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host_policies.html',
         host=host,
         policies=host.conn.Policy2.service.getPolicies())
 
-@app.route('/host/<int:host_id>/recovery-points')
+@app.route('/host/<int:host_id>/recovery-points/')
 def host_recovery_points(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host_recovery_points.html',
         host=host)
 
-@app.route('/host/<int:host_id>/task-history')
+@app.route('/host/<int:host_id>/task-history/')
 def host_task_history(host_id):
     host = R1softHost.query.get(host_id)
     tasks = inflate_tasks(host,
@@ -338,7 +340,7 @@ def host_api_proxy(host_id, namespace, method):
     func = lambda: soap_method(**params)
     return jsonify({'response': soap2native(func())})
 
-@app.route('/host/<int:host_id>/agent/<agent_uuid>/')
+@app.route('/host/<int:host_id>/agents/<agent_uuid>/')
 def agent_details(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
     agent = host.conn.Agent.service.getAgentByID(agent_uuid)
@@ -347,6 +349,34 @@ def agent_details(host_id, agent_uuid):
         host=host,
         links=links,
         agent=agent)
+
+@app.route('/host/<int:host_id>/disksafes/<disksafe_uuid>/')
+def disksafe_details(host_id, disksafe_uuid):
+    host = R1softHost.query.get(host_id)
+    disksafe = host.conn.DiskSafe.service.getDiskSafeByID(disksafe_uuid)
+    links = UUIDLink.query.filter_by(disksafe_uuid=disksafe_uuid)
+    return render_template('disksafe_details.html',
+        host=host,
+        links=links,
+        disksafe=disksafe)
+
+@app.route('/host/<int:host_id>/volumes/<volume_uuid>/')
+def volume_details(host_id, volume_uuid):
+    host = R1softHost.query.get(host_id)
+    volume = host.conn.Volume.service.getVolumeById(volume_uuid)
+    return render_template('volume_details.html',
+        host=host,
+        volume=volume)
+
+@app.route('/host/<int:host_id>/policies/<policy_uuid>/')
+def policy_details(host_id, policy_uuid):
+    host = R1softHost.query.get(host_id)
+    policy = host.conn.Policy2.service.getPolicyById(policy_uuid)
+    links = UUIDLink.query.filter_by(policy_uuid=policy_uuid)
+    return render_template('policy_details.html',
+        host=host,
+        links=links,
+        policy=policy)
 
 @app.route('/policy-directory/')
 def policy_directory_collection():

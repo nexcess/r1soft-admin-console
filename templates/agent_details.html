@@ -1,7 +1,9 @@
-{% extends 'base.html' %}
-{% block title %}CDP Agent - {{ agent.hostname }}{% endblock %}
-{% block content %}
-    <h1>{{agent.hostname}} @ {{ host.hostname }}</h1>
+{% extends 'host_base.html' %}
+{% set active_subnav_element = '#nav-se-host-agents' %}
+{% block title %}{{ agent.hostname }} - {{ super() }}{% endblock %}
+{% block host_sub_header %}{{ agent.hostname }}{% endblock %}
+{% block host_content %}
+<div class="row">
     <div class="row col-md-12">
         <div class="panel panel-default">
             <div class="panel-heading">Agent</div>
@@ -30,4 +32,5 @@
         </div>
     </div>
     {% endfor %}
+</div>
 {% endblock %}

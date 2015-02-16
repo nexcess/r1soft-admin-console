@@ -21,7 +21,7 @@
                 {% for disksafe in disksafes %}
                     <tr id="{{ disksafe.id }}">
                         <td>{{ disksafe.open|iconize }}</td>
-                        <td>{{ disksafe.description }}</td>
+                        <td><a href="{{ url_for('disksafe_details', host_id=host.id, disksafe_uuid=disksafe.id) }}">{{ disksafe.description }}</a></td>
                         <td>{{ disksafe.recoveryPointCount }}</td>
                         <td>{{ disksafe.deviceCount }}</td>
                         <td>{{ disksafe.bytesOnDisk|naturalsize }}</td>

@@ -23,7 +23,7 @@
                     <tr id="{{ policy.id }}">
                         <td>{{ policy.enabled|iconize }}</td>
                         <td>{{ policy.state|iconize }}</td>
-                        <td>{{ policy.name }}</td>
+                        <td><a href="{{ url_for('policy_details', host_id=host.id, policy_uuid=policy.id) }}">{{ policy.name }}</a></td>
                         <td>{{ policy.description }}</td>
                         <td>{{ policy.replicationScheduleFrequencyType|capitalize }}</td>
                         <td>{{ policy.lastReplicationRunTime.replace(microsecond=0) }}</td>

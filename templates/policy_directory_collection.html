@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% set active_nav_element = '#nav-e-policy-directory' %}
+{% block title %}CDP Directory{% endblock %}
+{% block content %}
+    <h2>Directory</h2>
+    <div class="row">
+        <div class="col-md-10">
+            <table id="data-list-table" class="table">
+                <thead>
+                    <tr>
+                        <th>OS</th>
+                        <th>Type</th>
+                        <th>Hostname</th>
+                        <th>Description</th>
+                        <th>CDP Host</th>
+                        <th>Retention Limit</th>
+                        <th>DB Backups</th>
+                        <th>State</th>
+                        <th>Latest Backup</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-2">
+            <br>
+            <ul class="list-group">
+            {% for host in NAV_hosts %}
+                <li id="host-group-item-{{ host.id }}" class="list-group-item">
+                    {{ host.hostname }}
+                    <i id="host-spinner-{{ host.id }}" class="fa fa-refresh pull-right"></i>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+{% block customjs %}
+<script>
+    $(function() {
+        var hosts = [
+        {% for host in NAV_hosts %}
+            {
+                id: {{ host.id }},
+                hostname: "{{ host.hostname }}",
+                data_url: "{{ url_for('policy_directory_collection_data', host_id=host.id) }}"
+            },
+        {% endfor %}
+        ];
+        var updater = getUpdateDataListTable("#data-list-table");
+
+        $.each(hosts, function(idx, host) {
+            updater(host);
+            $("#host-group-item-"+host.id).click(function() {
+                if($("#host-group-item-"+host.id).hasClass("list-group-item-danger")) {
+                    updater(host);
+                }
+            });
+        });
+
+        $("#nav-filter-input").show().attr({
+            'data-column': "0,1,2,3,4,7,8"
+        });
+        var table = $("#data-list-table").tablesorter({
+            sortList: [[2,0],[3,0]],
+            widgets: ["filter"],
+            widgetOptions: {
+                filter_external: $("#nav-filter-input"),
+                filter_columnFilters: false,
+            }
+        })
+    });
+</script>
+{% endblock %}

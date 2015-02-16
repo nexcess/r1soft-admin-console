@@ -19,7 +19,7 @@
                 <tbody>
                 {% for volume in volumes %}
                     <tr id="{{ volume.id }}">
-                        <td>{{ volume.name }}</td>
+                        <td><a href="{{ url_for('volume_details', host_id=host.id, volume_uuid=volume.id) }}">{{ volume.name }}</a></td>
                         <td>{{ volume.description }}</td>
                         <td>{{ volume.path }}</td>
                         <td>{{ volume.onDiskSize|naturalsize }}</td>

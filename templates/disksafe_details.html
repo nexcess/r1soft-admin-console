@@ -1,0 +1,16 @@
+{% extends 'host_base.html' %}
+{% set active_subnav_element = '#nav-se-host-disksafes' %}
+{% block title %}{{ disksafe.description }} - {{ super() }}{% endblock %}
+{% block host_sub_header %}{{ disksafe.description }}{% endblock %}
+{% block host_content %}
+<div class="row">
+    <div class="row col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Disk Safe</div>
+            <div class="panel-body">
+                <pre>{{ disksafe }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

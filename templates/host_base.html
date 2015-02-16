@@ -19,11 +19,13 @@
             <h1 class="page-header">
                 <strong>{{ host.hostname }}</strong>
                 <small class="pull-right">
+                {% block host_sub_header %}
                 {% if host_lic_info is defined %}
                     CDP Version: {{ host_lic_info.version or 'UNKNOWN'}}
                 {% else %}
                     User: {{ host.username }}
                 {% endif %}
+                {% endblock %}
                 </small>
             </h1>
             {% block host_content %}{% endblock %}
