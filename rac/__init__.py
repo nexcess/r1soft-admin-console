@@ -304,7 +304,7 @@ def host_details(host_id):
             host.conn.StorageDisk.service.getStorageDiskPaths()),
         key=lambda i: i.capacityBytes,
         reverse=True)[:3]
-    return render_template('host_overview.html',
+    return render_template('host/overview.html',
         host=host,
         host_info=host.conn.Configuration.service.getServerInformation(),
         host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
@@ -316,7 +316,7 @@ def host_details(host_id):
 @app.route('/host/<int:host_id>/volumes/')
 def host_volumes(host_id):
     host = R1softHost.query.get(host_id)
-    return render_template('host_volumes.html',
+    return render_template('host/volumes.html',
         host=host,
         host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
         volumes=host.conn.Volume.service.getVolumes())
@@ -324,28 +324,28 @@ def host_volumes(host_id):
 @app.route('/host/<int:host_id>/agents/')
 def host_agents(host_id):
     host = R1softHost.query.get(host_id)
-    return render_template('host_agents.html',
+    return render_template('host/agents.html',
         host=host,
         agents=host.conn.Agent.service.getAgents())
 
 @app.route('/host/<int:host_id>/disksafes/')
 def host_disksafes(host_id):
     host = R1softHost.query.get(host_id)
-    return render_template('host_disksafes.html',
+    return render_template('host/disksafes.html',
         host=host,
         disksafes=host.conn.DiskSafe.service.getDiskSafes())
 
 @app.route('/host/<int:host_id>/policies/')
 def host_policies(host_id):
     host = R1softHost.query.get(host_id)
-    return render_template('host_policies.html',
+    return render_template('host/policies.html',
         host=host,
         policies=host.conn.Policy2.service.getPolicies())
 
 @app.route('/host/<int:host_id>/recovery-points/')
 def host_recovery_points(host_id):
     host = R1softHost.query.get(host_id)
-    return render_template('host_recovery_points.html',
+    return render_template('host/recovery_points.html',
         host=host)
 
 @app.route('/host/<int:host_id>/task-history/')
@@ -356,7 +356,7 @@ def host_task_history(host_id):
             scheduledStart=str(datetime.date.today() - \
                 datetime.timedelta(app.config['R1SOFT_TASK_HISTORY_DAYS']))),
         with_alert_ids=True)
-    return render_template('host_task_history.html',
+    return render_template('host/task_history.html',
         host=host,
         tasks=tasks)
 
@@ -371,7 +371,7 @@ def host_users(host_id):
 @app.route('/host/<int:host_id>/configuration')
 def host_configuration(host_id):
     host = R1softHost.query.get(host_id)
-    return render_template('host_configuration.html',
+    return render_template('host/configuration.html',
         host=host)
 
 @app.route('/host/<int:host_id>/api-proxy/<namespace>/<method>', methods=['POST'])
@@ -389,7 +389,7 @@ def agent_details(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
     agent = host.conn.Agent.service.getAgentByID(agent_uuid)
     links = UUIDLink.query.filter_by(agent_uuid=agent_uuid)
-    return render_template('agent_details.html',
+    return render_template('host/details/agent.html',
         host=host,
         links=links,
         agent=agent)
@@ -399,7 +399,7 @@ def disksafe_details(host_id, disksafe_uuid):
     host = R1softHost.query.get(host_id)
     disksafe = host.conn.DiskSafe.service.getDiskSafeByID(disksafe_uuid)
     links = UUIDLink.query.filter_by(disksafe_uuid=disksafe_uuid)
-    return render_template('disksafe_details.html',
+    return render_template('host/details/disksafe.html',
         host=host,
         links=links,
         disksafe=disksafe)
@@ -408,7 +408,7 @@ def disksafe_details(host_id, disksafe_uuid):
 def volume_details(host_id, volume_uuid):
     host = R1softHost.query.get(host_id)
     volume = host.conn.Volume.service.getVolumeById(volume_uuid)
-    return render_template('volume_details.html',
+    return render_template('host/details/volume.html',
         host=host,
         volume=volume)
 
@@ -417,7 +417,7 @@ def policy_details(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     policy = host.conn.Policy2.service.getPolicyById(policy_uuid)
     links = UUIDLink.query.filter_by(policy_uuid=policy_uuid)
-    return render_template('policy_details.html',
+    return render_template('host/details/policy.html',
         host=host,
         links=links,
         policy=policy)
@@ -427,7 +427,7 @@ def task_details(host_id, task_uuid):
     host = R1softHost.query.get(host_id)
     task = inflate_task_logs(host, inflate_task_alerts(host,
         host.conn.TaskHistory.service.getTaskExecutionContextByID(task_uuid)))
-    return render_template('task_details.html',
+    return render_template('host/details/task.html',
         host=host,
         task=task)
 

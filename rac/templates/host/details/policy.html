@@ -1,13 +1,13 @@
-{% extends 'host_volumes.html' %}
-{% block title %}{{ volume.name }} - {{ super() }}{% endblock %}
-{% block host_sub_header %}{{ volume.name }}{% endblock %}
+{% extends 'host/policies.html' %}
+{% block title %}{{ policy.name }} - {{ super() }}{% endblock %}
+{% block host_sub_header %}{{ policy.name }}{% endblock %}
 {% block host_content %}
 <div class="row">
     <div class="row col-md-12">
         <div class="panel panel-default">
-            <div class="panel-heading">Volume</div>
+            <div class="panel-heading">Policy</div>
             <div class="panel-body">
-                <pre>{{ volume }}</pre>
+                <pre>{{ policy }}</pre>
             </div>
         </div>
     </div>

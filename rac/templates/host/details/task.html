@@ -1,4 +1,4 @@
-{% extends 'host_task_history.html' %}
+{% extends 'host/task_history.html' %}
 {% set task_name = task.taskType|replace('_', ' ')|title %}
 {% block title %}Task: {{ task_name }} - {{ super() }}{% endblock %}
 {% block host_sub_header %}{{ task_name }}{% endblock %}
