@@ -36,9 +36,13 @@ def populate_uuid_map(host=''):
     for host in hosts_list:
         app.logger.info('Updating map links for host[%d]: %s', host.id, host.hostname)
         try:
-            disksafes = host.conn.DiskSafe.service.getDiskSafes()
+            agents = host.conn.Agent.service.getAgents()
+            app.logger.debug('Pulled %d agent objects from API', len(agents))
+            disksafes = [ds for ds in host.conn.DiskSafe.service.getDiskSafes() \
+                if hasattr(ds, 'agentID')]
             app.logger.debug('Pulled %d disk safe objects from API', len(disksafes))
-            policies = host.conn.Policy2.service.getPolicies()
+            policies = [p for p in host.conn.Policy2.service.getPolicies() \
+                if hasattr(p, 'diskSafeID')]
             app.logger.debug('Pulled %d policy objects from API', len(policies))
         except (URLError, SSLError) as err:
             app.logger.warning('Error connecting to host: %s', host.hostname)
@@ -55,25 +59,20 @@ def populate_uuid_map(host=''):
                 db.session.commit()
 
         app.logger.info('Preparing to create mappings')
-        for policy in policies:
-            policy_uuid = policy.id
-            if not hasattr(policy, 'diskSafeID'):
-                app.logger.warning('Policy has no disk safe ID: %r', policy)
-                continue
-            disksafe_uuid = policy.diskSafeID
-            agent_uuid = [d.agentID for d in disksafes if d.id == disksafe_uuid][0]
-            map_link = UUIDLink(host.id, agent_uuid, disksafe_uuid, policy_uuid)
-            app.logger.debug('Created mapping for policy [%s:%s]: %r',
-                policy.name, policy.id, map_link)
-
-            db.session.add(map_link)
-            try:
-                db.session.commit()
-                app.logger.debug('Mapping successfully committed...')
-            except IntegrityError:
-                db.session.rollback()
-                app.logger.debug('Mapping already exists, skipping...')
-                continue
+        for agent in agents:
+            agent_disksafes = [ds for ds in disksafes if ds.agentID == agent.id]
+            for disksafe in agent_disksafes:
+                disksafe_policies = [p for p in policies if p.diskSafeID == disksafe.id]
+                for policy in disksafe_policies:
+                    map_link = UUIDLink(host.id, agent.id, disksafe.id, policy.id,
+                        agent_hostname=agent.hostname, disksafe_desc=disksafe.description,
+                        policy_name=policy.name)
+                    db.session.add(map_link)
+                    try:
+                        db.session.commit()
+                    except IntegrityError:
+                        db.session.rollback()
+                        continue
     app.logger.info('Finished populating UUID Map table')
 
 @manager.command
@@ -92,6 +91,9 @@ def import_old_config(old_config_filename):
             db.session.rollback()
             continue
 
+@manager.command
+def create_db():
+    db.create_all()
 
 if __name__ == '__main__':
     manager.run()
