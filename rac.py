@@ -35,6 +35,7 @@ import gevent.pool
 
 app = Flask(__name__)
 app.config.from_envvar('RAC_SETTINGS')
+app.jinja_env.add_extension('jinja2.ext.do')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 manager = Manager(app)
@@ -78,7 +79,14 @@ ICONIZE_MAP = {
     'SYSTEM':           'fa fa-cogs',
     'TASK_HISTORY_CLEANUP':     'fa fa-expand text-success',
 
+    # Log Level
+    'INFO':             'fa fa-flag text-info',
+    'WARNING':          'fa fa-flag text-warning',
+    'SEVERE':           'fa fa-flag text-danger',
 
+    # Log Source
+    'SERVER':           'fa fa-database text-primary',
+    'AGENT':            'fa fa-desktop text-primary',
 
     # UserType
     'SUPER_USER':       '',
@@ -138,8 +146,8 @@ class R1softHost(db.Model):
 
     @property
     def link(self):
-        html = '<a href="{internal_link}">{hostname}</a> ' + \
-            '<a href="{external_link}"><i class="fa fa-lg fa-external-link"></i></a>'
+        html = '<a href="{internal_link}">{hostname}</a>&nbsp;' + \
+            '<a href="{external_link}"><i class="fa fa-external-link"></i></a>'
         return Markup(html.format(internal_link=url_for('host_details', host_id=self.id),
             hostname=self.hostname,
             external_link=self.external_link))
@@ -162,11 +170,11 @@ class UUIDLink(db.Model):
     id              = db.Column(db.Integer(), primary_key=True)
     host_id         = db.Column(db.Integer(), db.ForeignKey('r1soft_host.id'))
     agent_uuid      = db.Column(db.String(36), nullable=False)
-    agent_hostname  = db.Column(db.String(255))
+    #agent_hostname  = db.Column(db.String(255))
     disksafe_uuid   = db.Column(db.String(36), nullable=False)
-    disksafe_desc   = db.Column(db.String(255))
+    #disksafe_desc   = db.Column(db.String(255))
     policy_uuid     = db.Column(db.String(36), nullable=False, index=True)
-    policy_name     = db.Column(db.String(255))
+    #policy_name     = db.Column(db.String(255))
 
     __table_args__  = (db.UniqueConstraint('agent_uuid', 'disksafe_uuid', 'policy_uuid', name='uuid_constraint'),)
 
@@ -232,14 +240,40 @@ def policy2disksafe(policy):
 def sort_tasks(task_list):
     return sorted(task_list, key=lambda t: t.executionTime)
 
-def inflate_tasks(host, task_id_list):
-    func = host.conn.TaskHistory.service.getTaskExecutionContextByID
-    return API_POOL.map(func, task_id_list)
+def inflate_tasks(host, task_id_list, with_alert_ids=False, with_log_message_ids=False):
+    get_task_func = host.conn.TaskHistory.service.getTaskExecutionContextByID
+    tasks = API_POOL.map(get_task_func, task_id_list)
+    if with_alert_ids:
+        get_alert_ids_func = host.conn.TaskHistory.service.getAlertIDsByTaskExecutionContextID
+        def add_alerts(task):
+            task.alertIDs = get_alert_ids_func(task.id)
+        API_POOL.map(add_alerts, tasks)
+    if with_log_message_ids:
+        get_message_ids_func = host.conn.TaskHistory.service.getLogMessageIDsByTaskExecutionContextID
+        def add_messages(task):
+            task.logMessageIDs = get_message_ids_func(task.id)
+        API_POOL.map(add_messages, tasks)
+    return tasks
 
+def inflate_task_alerts(host, task):
+    if not hasattr(task, 'alertIDs'):
+        task.alertIDs = host.conn.TaskHistory.service.getAlertIDsByTaskExecutionContextID(task.id)
+    task.alerts = API_POOL.map(lambda aid: host.conn.TaskHistory.service.getAlertByID(task.id, aid), task.alertIDs)
+    return task
+
+def inflate_task_logs(host, task):
+    if not hasattr(task, 'logMessageIDs'):
+        task.logMessageIDs = host.conn.TaskHistory.service.getLogMessageIDsByTaskExecutionContextID(task.id)
+    task.logMessages = API_POOL.map(lambda mid: host.conn.TaskHistory.service.getLogMessageByID(task.id, mid), task.logMessageIDs)
+    return task
 
 @app.context_processor
 def inject_hosts():
     return {'NAV_hosts': R1softHost.query.filter_by(active=True)}
+
+@app.context_processor
+def inject_thing():
+    return {'active_elements': []}
 
 @app.context_processor
 def inject_obj_attr_filter():
@@ -319,7 +353,8 @@ def host_task_history(host_id):
     tasks = inflate_tasks(host,
         host.conn.TaskHistory.service.getTaskExecutionContextIDs(
             scheduledStart=str(datetime.date.today() - \
-                datetime.timedelta(app.config['R1SOFT_TASK_HISTORY_DAYS']))))
+                datetime.timedelta(app.config['R1SOFT_TASK_HISTORY_DAYS']))),
+        with_alert_ids=True)
     return render_template('host_task_history.html',
         host=host,
         tasks=tasks)
@@ -378,6 +413,15 @@ def policy_details(host_id, policy_uuid):
         links=links,
         policy=policy)
 
+@app.route('/host/<int:host_id>/task-history/<task_uuid>/')
+def task_details(host_id, task_uuid):
+    host = R1softHost.query.get(host_id)
+    task = inflate_task_logs(host, inflate_task_alerts(host,
+        host.conn.TaskHistory.service.getTaskExecutionContextByID(task_uuid)))
+    return render_template('task_details.html',
+        host=host,
+        task=task)
+
 @app.route('/policy-directory/')
 def policy_directory_collection():
     return render_template('policy_directory_collection.html')
@@ -403,10 +447,12 @@ def policy_directory_collection_data(host_id):
 
         if not policy.enabled:
             policy_extra_data['real_state'] = 'disabled'
+            policy_extra_data['timestamp'] = policy.lastReplicationRunTime.replace(microsecond=0)
         else:
             if policy.state in ('OK', 'ALERT'):
                 # latest policy run was successful (possibly with alerts)
                 policy_extra_data['real_state'] = policy.state.lower()
+                policy_extra_data['timestamp'] = policy.lastReplicationRunTime.replace(microsecond=0)
                 running_task_ids = task_ids_by_state('RUNNING')
                 if running_task_ids:
                     running_tasks = sort_tasks(inflate_tasks(host, running_task_ids))
@@ -418,8 +464,6 @@ def policy_directory_collection_data(host_id):
                 if not host_data['stuck'] and (host_data['last_successful'] is None or \
                         host_data['last_successful'] < policy.lastReplicationRunTime):
                     host_data['last_successful'] = policy.lastReplicationRunTime.replace(microsecond=0)
-                    policy_extra_data['timestamp'] = policy.lastReplicationRunTime.replace(microsecond=0)
-
             elif policy.state == 'ERROR':
                 # latest policy run had an error
                 finished_task_ids = task_ids_by_state('FINISHED')

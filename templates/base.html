@@ -5,13 +5,14 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         {% block head %}
-        <title>{% block title %}Home{% endblock %} - R1soft Admin Console</title>
+        <title>{% block title %}{% endblock %} - R1soft Admin Console</title>
         {% endblock %}
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
         <!--
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
         -->
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='theme.bootstrap.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='rac.css') }}">
 
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -26,22 +27,41 @@
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a href="https://github.com/nexcess/r1soft-admin-console" class="navbar-brand">R1soft Admin Console</a>
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
                     <!-- <a href="{{ url_for('dashboard') }}" class="navbar-brand">R1soft Admin Console</a> -->
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav navbar-right">
-                        <li id="nav-e-dashboard"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li id="nav-e-dashboard">
+                            <a href="{{ url_for('dashboard') }}"><i class="fa fa-tachometer">&nbsp;</i>Dashboard</a>
+                        </li>
                         <li id="nav-e-host" class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">CDP Hosts <span class="caret"></span></a>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-database">&nbsp;</i>CDP Hosts <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
                             {% for host in NAV_hosts %}
                                 <li><a href="{{ url_for('host_details', host_id=host.id) }}">{{ host.hostname }}</a></li>
                             {% endfor %}
                             </ul>
                         </li>
-                        <li id="nav-e-policy-directory"><a href="{{ url_for('policy_directory_collection') }}">Policy Directory</a></li>
-                        <li id="nav-e-settings"><a href="#">Settings</a></li>
-                        <li id="nav-e-login">{% block profile_link %}<a href="#">Login</a>{% endblock %}</li>
+                        <li id="nav-e-policy-directory">
+                            <a href="{{ url_for('policy_directory_collection') }}"><i class="fa fa-tasks">&nbsp;</i>Policy Directory</a>
+                        </li>
+                        <li id="nav-e-settings">
+                            <a href="#"><i class="fa fa-cog">&nbsp;</i>Settings</a>
+                        </li>
+                        <li id="nav-e-login">
+                            {% if True %}
+                            <a href="#"><i class="fa fa-sign-in">&nbsp;</i>Login</a>
+                            {% else %}
+                            <a href="#"><i class="fa fa-sign-out">&nbsp;</i>Logout</a>
+                            {% endif %}
+                        </li>
+
                     </ul>
                     <form action="#" class="navbar-form navbar-right">
                         <input id="nav-filter-input" type="text" class="form-control" placeholder="Search...">
@@ -97,14 +117,9 @@
                     $("#message-area-container").hide();
                 }
                 $("#nav-filter-input").hide();
-                var active_nav_element = "{{ active_nav_element }}";
-                var active_subnav_element = "{{ active_subnav_element }}";
-                if(active_nav_element) {
-                    $(active_nav_element).addClass("active");
-                }
-                if(active_subnav_element) {
-                    $(active_subnav_element).addClass("active");
-                }
+                {% for ae in active_elements %}
+                $("{{ ae }}").addClass("active");
+                {% endfor %}
             });
         </script>
         {% block customjs %}{% endblock %}

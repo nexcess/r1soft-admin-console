@@ -1,5 +1,4 @@
-{% extends 'host_base.html' %}
-{% set active_subnav_element = '#nav-se-host-agents' %}
+{% extends 'host_agents.html' %}
 {% block title %}{{ agent.hostname }} - {{ super() }}{% endblock %}
 {% block host_sub_header %}{{ agent.hostname }}{% endblock %}
 {% block host_content %}
@@ -34,3 +33,4 @@
     {% endfor %}
 </div>
 {% endblock %}
+{% block customjs %}{% endblock %}

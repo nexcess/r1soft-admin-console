@@ -1,5 +1,4 @@
-{% extends 'host_base.html' %}
-{% set active_subnav_element = '#nav-se-host-disksafes' %}
+{% extends 'host_disksafes.html' %}
 {% block title %}{{ disksafe.description }} - {{ super() }}{% endblock %}
 {% block host_sub_header %}{{ disksafe.description }}{% endblock %}
 {% block host_content %}
@@ -14,3 +13,4 @@
     </div>
 </div>
 {% endblock %}
+{% block customjs %}{% endblock %}

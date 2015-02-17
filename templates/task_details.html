@@ -1,0 +1,63 @@
+{% extends 'host_task_history.html' %}
+{% set task_name = task.taskType|replace('_', ' ')|title %}
+{% block title %}Task: {{ task_name }} - {{ super() }}{% endblock %}
+{% block host_sub_header %}{{ task_name }}{% endblock %}
+{% block host_content %}
+<div class="row">
+    <div class="row col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">Task</div>
+            <div class="panel-body">
+                <pre>{{ task }}</pre>
+            </div>
+        </div>
+    </div>
+    {% if task.alerts %}
+    <h2>Alerts</h2>
+    <div class="row col-md-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for alert in task.alerts %}
+                <tr id="alert-id-{{ alert.alertID }}">
+                    <td>{{ alert.alertTime.replace(microsecond=0) }}</td>
+                    <td>{{ alert.alertString }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% if task.logMessages %}
+    <h2>Logs</h2>
+    <div class="row col-md-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Level</th>
+                    <th>Source</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for message in task.logMessages %}
+                <tr id="message-id-{{ message.messageID }}">
+                    <td>{{ message.messageTime.replace(microsecond=0) }}</td>
+                    <td>{{ message.messageLevel|iconize }}</td>
+                    <td>{{ message.messageSource|iconize }}</td>
+                    <td>{{ message.messageString }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block customjs %}{% endblock %}

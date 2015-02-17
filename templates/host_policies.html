@@ -1,9 +1,9 @@
 {% extends 'host_base.html' %}
-{% set active_subnav_element = '#nav-se-host-policies' %}
-{% block title %}{{ host.hostname }} - Policies{% endblock %}
+{% do active_elements.append('#nav-se-host-policies') %}
+{% block title %}Policies - {{ super() }}{% endblock %}
+{% block host_sub_header %}{{ policies|length }} Policies{% endblock %}
 {% block host_content %}
 <div class="row">
-    <h2>Policies</h2>
     <div class="row">
         <div class="col-md-12">
             <table id="policies-list-table" class="table">
@@ -48,6 +48,7 @@
             widgetOptions: {
                 filter_external: $("#nav-filter-input"),
                 filter_columnFilters: false,
+                filter_hideFilters: true,
             }
         })
     });

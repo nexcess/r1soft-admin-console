@@ -1,9 +1,13 @@
 {% extends 'host_base.html' %}
-{% set active_subnav_element = '#nav-se-host-agents' %}
-{% block title %}{{ host.hostname }} - Agents{% endblock %}
+{% do active_elements.append('#nav-se-host-agents') %}
+{% block title %}Agents - {{ super() }}{% endblock %}
+{% block host_sub_header %}{{ agents|length }} Agents{% endblock %}
 {% block host_content %}
 <div class="row">
-    <h2>Agents</h2>
+    <a class="btn btn-success pull-right" href="#">
+        <i class="fa fa-plus fa-lg">&nbsp;</i>
+        Add New Agent
+    </a>
     <div class="row">
         <div class="col-md-12">
             <table id="agents-list-table" class="table">

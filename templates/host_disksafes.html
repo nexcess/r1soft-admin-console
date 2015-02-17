@@ -1,9 +1,9 @@
 {% extends 'host_base.html' %}
-{% set active_subnav_element = '#nav-se-host-disksafes' %}
-{% block title %}{{ host.hostname }} - Disk Safes{% endblock %}
+{% do active_elements.append('#nav-se-host-disksafes') %}
+{% block title %}Disk Safes - {{ super() }}{% endblock %}
+{% block host_sub_header %}{{ disksafes|length }} Disk Safes{% endblock %}
 {% block host_content %}
 <div class="row">
-    <h2>Disk Safes</h2>
     <div class="row">
         <div class="col-md-12">
             <table id="disksafes-list-table" class="table">

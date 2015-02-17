@@ -1,5 +1,4 @@
-{% extends 'host_base.html' %}
-{% set active_subnav_element = '#nav-se-host-policies' %}
+{% extends 'host_policies.html' %}
 {% block title %}{{ policy.name }} - {{ super() }}{% endblock %}
 {% block host_sub_header %}{{ policy.name }}{% endblock %}
 {% block host_content %}
@@ -14,3 +13,4 @@
     </div>
 </div>
 {% endblock %}
+{% block customjs %}{% endblock %}

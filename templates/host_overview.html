@@ -1,6 +1,6 @@
 {% extends 'host_base.html' %}
-{% set active_subnav_element = '#nav-se-host-overview' %}
-{% block title %}{{ host.hostname }} - Overview{% endblock %}
+{% do active_elements.append('#nav-se-host-overview') %}
+{% block title %}Overview - {{ super() }}{% endblock %}
 {% block host_content %}
     <div class="row">
         <div class="col-md-6">
