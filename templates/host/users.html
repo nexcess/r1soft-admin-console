@@ -1,0 +1,61 @@
+{% extends 'host_base.html' %}
+{% do active_elements.append('#nav-se-host-users') %}
+{% block title %}Users - {{ super() }}{% endblock %}
+{% block host_sub_header %}{{ users|length }} Users{% endblock %}
+{% block host_content %}
+<div class="row">
+    <a class="btn btn-success pull-right" href="#">
+        <i class="fa fa-plus fa-lg">&nbsp;</i>
+        Add New User
+    </a>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="data-list-table" class="table">
+                <thead>
+                    <tr>
+                        <th>Enabled</th>
+                        <th>Type</th>
+                        <th>Username</th>
+                        <th>Authentication Type</th>
+                        <th>Use LDAP</th>
+                        <th>Attributes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr id="{{ user.id }}">
+                        <td>{{ user.enabled|iconize }}</td>
+                        <td>{{ user.userType|iconize }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.authenticationType }}</td>
+                        {% if user.useLDAPAuthentication is defined %}
+                        <td>{{ user.useLDAPAuthentication|iconize }}</td>
+                        {% else %}
+                        <td>{{ 'DISABLED'|iconize }}</td>
+                        {% endif %}
+                        <td>{{ user.userAttributes }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block customjs %}
+<script>
+    $(function () {
+        $("#nav-filter-input").show().attr({
+            'data-column': "2"
+        });
+        var table = $("#data-list-table").tablesorter({
+            sortList: [[2,0]],
+            widgets: ["filter"],
+            widgetOptions: {
+                filter_external: $("#nav-filter-input"),
+                filter_columnFilters: false,
+            }
+        })
+    });
+</script>
+{% endblock %}

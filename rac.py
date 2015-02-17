@@ -56,13 +56,13 @@ ICONIZE_MAP = {
     'ALERT':            'fa fa-exclamation-triangle text-warning',
 
     # RecoveryPointState
-    'REPLICATING':      '',
-    'AVAILABLE':        '',
-    'MERGING':          '',
-    'MERGED':           '',
-    'LOCKED':           '',
-    'REPLICATION_INTERRUPTED':   '',
-    'MERGE_INTERRUPTED':'',
+    # 'REPLICATING':      '',
+    # 'AVAILABLE':        '',
+    # 'MERGING':          '',
+    # 'MERGED':           '',
+    # 'LOCKED':           '',
+    # 'REPLICATION_INTERRUPTED':   '',
+    # 'MERGE_INTERRUPTED':'',
 
     # TaskState
     'FINISHED':         'fa fa-check-circle-o text-success',
@@ -89,14 +89,14 @@ ICONIZE_MAP = {
     'AGENT':            'fa fa-desktop text-primary',
 
     # UserType
-    'SUPER_USER':       '',
-    'SUB_USER':         '',
-    'POWER_USER':       '',
+    'SUPER_USER':       'fa fa-user-md text-primary',
+    'SUB_USER':         'fa fa-user',
+    'POWER_USER':       'fa fa-user-plus',
 
     # ReportType
-    'TASK_HISTORY':     '',
-    'SERVER_BACKUP':    '',
-    'QUOTA_ALERT':      '',
+    # 'TASK_HISTORY':     '',
+    # 'SERVER_BACKUP':    '',
+    # 'QUOTA_ALERT':      '',
 
     # Special/shared values
     True:               'fa fa-check text-success',
@@ -358,6 +358,14 @@ def host_task_history(host_id):
     return render_template('host_task_history.html',
         host=host,
         tasks=tasks)
+
+@app.route('/host/<int:host_id>/users/')
+def host_users(host_id):
+    host = R1softHost.query.get(host_id)
+    users = host.conn.User.service.getUsers()
+    return render_template('host/users.html',
+        host=host,
+        users=users)
 
 @app.route('/host/<int:host_id>/configuration')
 def host_configuration(host_id):
