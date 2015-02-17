@@ -18,12 +18,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from rac import app, db, manager
+from rac.models import R1softHost, UUIDLink
+
 from sqlalchemy.exc import IntegrityError
 from r1soft.util import read_config
 from urllib2 import URLError
 from ssl import SSLError
-
-from rac import app, db, manager, R1softHost, UUIDLink
 
 
 @manager.command
@@ -94,6 +95,10 @@ def import_old_config(old_config_filename):
 @manager.command
 def create_db():
     db.create_all()
+
+@manager.command
+def run_server():
+    app.run(host='0.0.0.0')
 
 if __name__ == '__main__':
     manager.run()
