@@ -38,10 +38,10 @@
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav navbar-right">
                         <li id="nav-e-dashboard">
-                            <a href="{{ url_for('dashboard') }}"><i class="fa fa-tachometer">&nbsp;</i>Dashboard</a>
+                            <a href="{{ url_for('dashboard') }}"><i class="fa fa-bar-chart">&nbsp;</i>Dashboard</a>
                         </li>
                         <li id="nav-e-host" class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-database">&nbsp;</i>CDP Hosts <span class="caret"></span></a>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-server">&nbsp;</i>CDP Hosts <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
                             {% for host in NAV_hosts %}
                                 <li><a href="{{ url_for('host_details', host_id=host.id) }}">{{ host.hostname }}</a></li>
@@ -49,7 +49,7 @@
                             </ul>
                         </li>
                         <li id="nav-e-policy-directory">
-                            <a href="{{ url_for('policy_directory_collection') }}"><i class="fa fa-tasks">&nbsp;</i>Policy Directory</a>
+                            <a href="{{ url_for('policy_directory_collection') }}"><i class="fa fa-heartbeat">&nbsp;</i>Policy Directory</a>
                         </li>
                         <li id="nav-e-settings">
                             <a href="#"><i class="fa fa-cog">&nbsp;</i>Settings</a>

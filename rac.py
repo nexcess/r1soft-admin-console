@@ -74,7 +74,7 @@ ICONIZE_MAP = {
     # TaskType
     'DATA_PROTECTION_POLICY':   'fa fa-clipboard',
     'FILE_RESTORE':     'fa fa-files-o text-info',
-    'MERGE_RECOVERY_POINTS':    'fa fa-th-large text-primary',
+    'MERGE_RECOVERY_POINTS':    'fa fa-cubes text-primary',
     'EMAIL_REPORT':     'fa fa-envelope-o text-primary',
     'SYSTEM':           'fa fa-cogs',
     'TASK_HISTORY_CLEANUP':     'fa fa-expand text-success',
@@ -89,9 +89,9 @@ ICONIZE_MAP = {
     'AGENT':            'fa fa-desktop text-primary',
 
     # UserType
-    'SUPER_USER':       'fa fa-user-md text-primary',
-    'SUB_USER':         'fa fa-user',
-    'POWER_USER':       'fa fa-user-plus',
+    'SUPER_USER':       'fa fa-user-plus text-primary',
+    'SUB_USER':         'fa fa-child',
+    'POWER_USER':       'fa fa-user',
 
     # ReportType
     # 'TASK_HISTORY':     '',
@@ -104,6 +104,7 @@ ICONIZE_MAP = {
     '':                 'fa fa-times text-danger',
     'ERROR':            'fa fa-exclamation-circle text-danger',
     'UNKNOWN':          'fa fa-question-circle',
+    'NEW':              'fa fa-eye-slash',
     'STUCK':            'fa fa-pause text-danger',
     'DISABLED':         'fa fa-times text-default',
     'ENABLED':          'fa fa-check text-primary',
@@ -170,11 +171,11 @@ class UUIDLink(db.Model):
     id              = db.Column(db.Integer(), primary_key=True)
     host_id         = db.Column(db.Integer(), db.ForeignKey('r1soft_host.id'))
     agent_uuid      = db.Column(db.String(36), nullable=False)
-    #agent_hostname  = db.Column(db.String(255))
+    agent_hostname  = db.Column(db.String(255))
     disksafe_uuid   = db.Column(db.String(36), nullable=False)
-    #disksafe_desc   = db.Column(db.String(255))
+    disksafe_desc   = db.Column(db.String(255))
     policy_uuid     = db.Column(db.String(36), nullable=False, index=True)
-    #policy_name     = db.Column(db.String(255))
+    policy_name     = db.Column(db.String(255))
 
     __table_args__  = (db.UniqueConstraint('agent_uuid', 'disksafe_uuid', 'policy_uuid', name='uuid_constraint'),)
 
