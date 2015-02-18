@@ -1,0 +1,17 @@
+{% for entry in entries %}
+<tr id="{{ entry.fileName }}" data-url="{{ url_for_entry(entry) }}" data-object-type="{{ 'dir' if entry.isDirectory else 'file' }}">
+    <td>
+        <input type="checkbox" class="rac-select-for-restore" value="">
+    </td>
+    <td>
+        {% if entry.isDirectory %}
+        <i class="fa fa-folder text-warning fa-lg"></i>
+        {% else %}
+        <i class="fa fa-file fa-lg"></i>
+        {% endif %}
+    </td>
+    <td class="rac-filename">{{ entry.filePath }}</td>
+    <td>{{ entry.fileSize|naturalsize }}</td>
+    <td>{{ entry.modifyTime|ms_to_datetime }}</td>
+</tr>
+{% endfor %}

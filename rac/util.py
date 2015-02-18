@@ -23,7 +23,8 @@ from rac.models import R1softHost, UUIDLink, or_, and_
 import gevent.pool
 from suds.sudsobject import asdict
 from flask import Markup
-from humanize import naturalsize
+from humanize import naturalsize, naturaltime
+import datetime
 
 
 ICONIZE_MAP = {
@@ -40,13 +41,13 @@ ICONIZE_MAP = {
     'ALERT':            'fa fa-exclamation-triangle text-warning',
 
     # RecoveryPointState
-    # 'REPLICATING':      '',
-    # 'AVAILABLE':        '',
+    'REPLICATING':      'fa fa-files-o text-primary',
+    'AVAILABLE':        'fa fa-check-circle-o text-success',
     # 'MERGING':          '',
     # 'MERGED':           '',
-    # 'LOCKED':           '',
+    'LOCKED':           'fa fa-lock',
     # 'REPLICATION_INTERRUPTED':   '',
-    # 'MERGE_INTERRUPTED':'',
+    'MERGE_INTERRUPTED':'fa fa-exclamation-triangle text-warning',
 
     # TaskState
     'FINISHED':         'fa fa-check-circle-o text-success',
@@ -165,12 +166,12 @@ def green_map(func, iterable):
     return API_POOL.map(func, iterable)
 
 @app.context_processor
-def inject_hosts():
-    return {'NAV_hosts': R1softHost.query.filter_by(active=True)}
-
-@app.context_processor
-def inject_thing():
-    return {'active_elements': [], 'search_uuid_map': search_uuid_map}
+def inject_data():
+    return {
+        'NAV_hosts':                R1softHost.query.filter_by(active=True),
+        'active_elements':          [],
+        'search_uuid_map':          search_uuid_map,
+    }
 
 @app.context_processor
 def inject_obj_attr_filter():
@@ -187,3 +188,11 @@ def iconize_filter(s):
 @app.template_filter('naturalsize')
 def naturalsize_filter(s):
     return naturalsize(s)
+
+@app.template_filter('naturaltime')
+def naturaltime(dt):
+    return naturaltime(dt)
+
+@app.template_filter('ms_to_datetime')
+def convert_ms_to_datetime(ms):
+    return datetime.datetime.fromtimestamp(ms // 1000)

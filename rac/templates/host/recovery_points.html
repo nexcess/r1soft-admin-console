@@ -4,13 +4,64 @@
 {% block title %}Recovery Points - {{ super() }}{% endblock %}
 {% block host_content %}
 <div class="row">
-    <h2>Recovery Points</h2>
-    <div class="row">
-        Not Yet Implemented
+    <div class="col-md-12">
+        <i id="agent-select-spinner" class="fa fa-refresh fa-lg"></i>&nbsp;
+        <select style="width: 50%;" name="agent-select" id="agent-select" class="form-control pull-right">
+            {% for agent in agents %}
+            <option value="{{ url_for('host_agent_recovery_points', host_id=host.id, agent_uuid=agent.id) }}">{{ agent.hostname }} ({{ agent.description }})</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <table id="data-list-table" class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Created On</th>
+                    <th>State</th>
+                    <th>Devices</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
 {% block customjs %}
 <script>
+    $(function () {
+        $("#nav-filter-input").show().attr({
+            'data-column': "0"
+        });
+        var table = $("#data-list-table").tablesorter({
+            sortList: [[0,1]],
+            widgets: ["filter"],
+            widgetOptions: {
+                filter_external: $("#nav-filter-input"),
+                filter_columnFilters: false,
+            }
+        })
+        var agent_selector = $("#agent-select");
+        var spinner = $("#agent-select-spinner");
+        spinner.hide();
+        agent_selector.change(function() {
+            $("#data-list-table>tbody").html("");
+            spinner.show();
+            spinner.addClass("fa-spin");
+            agent_selector.attr({disabled: true});
+            $.get(agent_selector.val(), function(response) {
+                $("#data-list-table>tbody").html(response);
+                $("#data-list-table").trigger("update");
+            }).always(function() {
+                spinner.hide().removeClass("fa-spin");
+                agent_selector.attr({disabled: false});
+            });
+        });
+        agent_selector.change();
+    });
 </script>
 {% endblock %}

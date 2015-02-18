@@ -20,11 +20,12 @@
 from rac import app
 from rac.models import R1softHost, UUIDLink
 from rac.util import green_map, policy2agent, inflate_tasks, inflate_task_alerts, \
-    sort_tasks, inflate_task_logs, search_uuid_map
+    sort_tasks, inflate_task_logs, search_uuid_map, soap2native
 from rac.forms import HostConfigurationForm
 
-from flask import render_template, request
+from flask import render_template, request, jsonify, url_for, redirect
 import datetime
+from os.path import join as path_join
 
 
 @app.route('/')
@@ -84,8 +85,62 @@ def host_policies(host_id):
 @app.route('/host/<int:host_id>/recovery-points/')
 def host_recovery_points(host_id):
     host = R1softHost.query.get(host_id)
+    agents = sorted(host.conn.Agent.service.getAgents(), key=lambda a: a.hostname)
     return render_template('host/recovery_points.html',
-        host=host)
+        host=host,
+        agents=agents)
+
+@app.route('/host/<int:host_id>/recovery-points/agent/<agent_uuid>/')
+def host_agent_recovery_points(host_id, agent_uuid):
+    host = R1softHost.query.get(host_id)
+    agent = host.conn.Agent.service.getAgentByID(agent_uuid)
+    disksafes = host.conn.DiskSafe.service.getDiskSafesForAgent(agent)
+    all_recovery_points = green_map(lambda ds: host.conn.RecoveryPoints2.service.getRecoveryPoints(ds.id, False), disksafes)
+    collection_data = {
+        ds: recovery_points for ds, recovery_points in zip(disksafes, all_recovery_points)
+    }
+    return render_template('host/recovery_points/list.html',
+        host=host,
+        agent=agent,
+        collection_data=collection_data)
+
+@app.route('/host/<int:host_id>/recovery-points/disk-safe/<ds_uuid>/point/<int:rp_id>/')
+def host_agent_recovery_points_browse(host_id, ds_uuid, rp_id):
+    host = R1softHost.query.get(host_id)
+    name = UUIDLink.query.filter_by(disksafe_uuid=ds_uuid).first().disksafe_desc
+    rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
+    return render_template('host/recovery_points/browse.html',
+        host=host,
+        name=name,
+        disksafe_id=ds_uuid,
+        recovery_point=rp)
+
+@app.route('/host/<int:host_id>/fs-data/disk-safe/<ds_uuid>/point/<int:rp_id>/path/<path_b64>')
+def host_agent_recovery_points_browse_data(host_id, ds_uuid, rp_id, path_b64):
+    path = path_b64.decode('base64')
+    host = R1softHost.query.get(host_id)
+    rp_svc = host.conn.RecoveryPoints2.service
+    rp = rp_svc.getRecoveryPointByID(ds_uuid, rp_id)
+    try:
+        dir_entries = rp_svc.getDirectoryEntries(rp, path)
+    except Exception as err:
+        app.logger.exception(err)
+        file_entries = []
+    else:
+        file_entries = rp_svc.getMultipleFileEntryInformation(rp, path, dir_entries)
+    return render_template('host/recovery_points/entries.html',
+        url_for_entry=lambda e: url_for('host_agent_recovery_points_browse_data',
+            host_id=host.id, ds_uuid=ds_uuid, rp_id=rp_id, path_b64=path_join(path, e.filePath).encode('base64').rstrip()),
+        entries=file_entries)
+
+@app.route('/host/<int:host_id>/restore/disk-safe/<ds_uuid>/point/<int:rp_id>', methods=['POST'])
+def host_agent_recovery_points_restore(host_id, ds_uuid, rp_id):
+    raise NotImplementedError
+    host = R1softHost.query.get(host_id)
+    rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
+    restore_options = host.conn.RecoveryPoints2.factory.create('fileRestoreOptions')
+    task = host.conn.RecoveryPoints2.service.doFileRestore(rp, restore_options)
+    return redirect(url_for('task_details', host_id=host_id, task_uuid=task.id))
 
 @app.route('/host/<int:host_id>/task-history/')
 def host_task_history(host_id):

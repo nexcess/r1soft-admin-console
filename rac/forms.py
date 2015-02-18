@@ -21,7 +21,7 @@ from rac.models import R1softHost
 
 from wtforms_alchemy import ModelForm
 from flask.ext.wtf import Form
-from wtforms import IntegerField, BooleanField, StringField
+from wtforms import IntegerField, BooleanField, StringField, RadioField, SelectMultipleField
 from wtforms.validators import NumberRange, InputRequired
 
 class R1softHostForm(ModelForm):
@@ -49,3 +49,23 @@ class HostConfigurationForm(Form):
     https_keystore          = StringField('Keystore Path')
     https_max_conn          = IntegerField('Max Connections',
                                 [NumberRange(min=1, max=9999)])
+
+class RestoreForm(Form):
+    base_path               = StringField('Base Path')
+    file_names              = SelectMultipleField('Files to Restore')
+    restore_target          = RadioField('Restore Target',
+                                [InputRequired()],
+                                choices=[
+                                    ('original_host', 'Original Host'),
+                                    ('alt_host', 'Alternate Host')])
+    alt_restore_location    = StringField('Alternate Location')
+    alt_restore_host        = StringField('Alternate Host',
+                                [])
+    alt_restore_port        = IntegerField('Alternate Host Port',
+                                [NumberRange(min=1, max=65535)])
+    overwrite_existing      = BooleanField('Overwrite Existing Files',
+                                [InputRequired()])
+    use_compression         = BooleanField('Use Compression',
+                                [InputRequired()])
+    estimate_size           = BooleanField('Estimate Restore Size',
+                                [InputRequired()])
