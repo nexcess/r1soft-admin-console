@@ -1,5 +1,6 @@
 {% extends 'host/base.html' %}
 {% do active_elements.append('#nav-se-host-policies') %}
+{% set current_host_view = 'host_policies' %}
 {% block title %}Policies - {{ super() }}{% endblock %}
 {% block host_sub_header %}{{ policies|length }} Policies{% endblock %}
 {% block host_content %}
@@ -14,6 +15,7 @@
                         <th>Name</th>
                         <th>Description</th>
                         <th>Frequency</th>
+                        <th>Links</th>
                         <th>Last Run Time</th>
                         <th>Next Run Time</th>
                     </tr>
@@ -26,7 +28,8 @@
                         <td><a href="{{ url_for('policy_details', host_id=host.id, policy_uuid=policy.id) }}">{{ policy.name }}</a></td>
                         <td>{{ policy.description }}</td>
                         <td>{{ policy.replicationScheduleFrequencyType|capitalize }}</td>
-                        <td>{{ policy.lastReplicationRunTime.replace(microsecond=0) }}</td>
+                        <td>{{ search_uuid_map(policy.name, policy.description)|length }}</td>
+                        <td>{% if policy.lastReplicationRunTime is defined %}{{ policy.lastReplicationRunTime.replace(microsecond=0) }}{% endif %}</td>
                         <td>{{ policy.nextReplicationRunTime }}</td>
                     </tr>
                 {% endfor %}

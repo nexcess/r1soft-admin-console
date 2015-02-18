@@ -1,5 +1,6 @@
 {% extends 'host/base.html' %}
 {% do active_elements.append('#nav-se-host-disksafes') %}
+{% set current_host_view = 'host_disksafes' %}
 {% block title %}Disk Safes - {{ super() }}{% endblock %}
 {% block host_sub_header %}{{ disksafes|length }} Disk Safes{% endblock %}
 {% block host_content %}

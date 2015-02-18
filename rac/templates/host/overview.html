@@ -1,7 +1,9 @@
 {% extends 'host/base.html' %}
 {% do active_elements.append('#nav-se-host-overview') %}
+{% set current_host_view = 'host_details' %}
 {% block title %}Overview - {{ super() }}{% endblock %}
 {% block host_content %}
+<div class="row">
     <div class="row">
         <div class="col-md-6">
             <div class="panel panel-default">
@@ -11,7 +13,7 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-md-2 text-center">
-                            <h2 class="text-primary">{{ agents|length }}</h2>
+                            <h2 class="text-primary">{{ agent_count }}</h2>
                             Servers
                         </div>
                         <div class="col-md-2 text-center">
@@ -42,44 +44,44 @@
                 <div class="panel-body">
                     <div class="row col-md-12">
                         <div class="col-md-2 text-center">
-                            <h2>{{ host_lic_info.currentAgentCount }}</h2>
+                            <h2>{{ host_stats['license'].currentAgentCount }}</h2>
                             Physical Servers
                         </div>
                         <div class="col-md-2 text-center">
-                            <h2>{{ host_lic_info.currentVirtualAgentCount }}</h2>
+                            <h2>{{ host_stats['license'].currentVirtualAgentCount }}</h2>
                             Virtual Servers
                         </div>
                     </div>
-                    {% if host_lic_info.licenseAgentCount > 0 %}
+                    {% if host_stats['license'].licenseAgentCount > 0 %}
                     <div class="row col-md-12">
                         <h5><strong>Physical Servers</strong></h5>
                         <div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar"
-                                        aria-valuenow="{{ (100 * (host_lic_info.currentAgentCount / host_lic_info.licenseAgentCount))|round(0, 'floor') }}"
+                                        aria-valuenow="{{ (100 * (host_stats['license'].currentAgentCount / host_stats['license'].licenseAgentCount))|round(0, 'floor') }}"
                                         aria-valuemin="0" aria-valuemax="100"
-                                        style="width: {{ (100 * (host_lic_info.currentAgentCount / host_lic_info.licenseAgentCount))|round(0, 'floor') }}%;">
+                                        style="width: {{ (100 * (host_stats['license'].currentAgentCount / host_stats['license'].licenseAgentCount))|round(0, 'floor') }}%;">
                                 </div>
                             </div>
                         </div>
-                        <span><strong>{{ host_lic_info.currentAgentCount }}</strong> Used</span>
-                        <span class="pull-right"><strong>{{ host_lic_info.licenseAgentCount - host_lic_info.currentAgentCount}}</strong> Remaining</span>
+                        <span><strong>{{ host_stats['license'].currentAgentCount }}</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_stats['license'].licenseAgentCount - host_stats['license'].currentAgentCount}}</strong> Remaining</span>
                     </div>
                     {% endif %}
-                    {% if host_lic_info.licenseVirtualAgentCount > 0 %}
+                    {% if host_stats['license'].licenseVirtualAgentCount > 0 %}
                     <div class="row col-md-12">
                         <h5><strong>Physical Servers</strong></h5>
                         <div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar"
-                                        aria-valuenow="{{ (100 * (host_lic_info.currentVirtualAgentCount / host_lic_info.licenseVirtualAgentCount))|round(0, 'floor') }}"
+                                        aria-valuenow="{{ (100 * (host_stats['license'].currentVirtualAgentCount / host_stats['license'].licenseVirtualAgentCount))|round(0, 'floor') }}"
                                         aria-valuemin="0" aria-valuemax="100"
-                                        style="width: {{ (100 * (host_lic_info.currentVirtualAgentCount / host_lic_info.licenseVirtualAgentCount))|round(0, 'floor') }}%;">
+                                        style="width: {{ (100 * (host_stats['license'].currentVirtualAgentCount / host_stats['license'].licenseVirtualAgentCount))|round(0, 'floor') }}%;">
                                 </div>
                             </div>
                         </div>
-                        <span><strong>{{ host_lic_info.currentVirtualAgentCount }}</strong> Used</span>
-                        <span class="pull-right"><strong>{{ host_lic_info.licenseVirtualAgentCount - host_lic_info.currentVirtualAgentCount}}</strong> Remaining</span>
+                        <span><strong>{{ host_stats['license'].currentVirtualAgentCount }}</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_stats['license'].licenseVirtualAgentCount - host_stats['license'].currentVirtualAgentCount}}</strong> Remaining</span>
                     </div>
                     {% endif %}
                 </div>
@@ -143,45 +145,64 @@
                         <div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar"
-                                        aria-valuenow="{{ (100 - (host_info.freePhysicalMemory / host_info.totalPhysicalMemory))|round(0, 'floor') }}"
+                                        aria-valuenow="{{ (100 - (host_stats['info'].freePhysicalMemory / host_stats['info'].totalPhysicalMemory))|round(0, 'floor') }}"
                                         aria-valuemin="0" aria-valuemax="100"
-                                        style="width: {{ (100 - (host_info.freePhysicalMemory / host_info.totalPhysicalMemory))|round(1, 'floor') }}%;">
+                                        style="width: {{ (100 - (host_stats['info'].freePhysicalMemory / host_stats['info'].totalPhysicalMemory))|round(1, 'floor') }}%;">
                                 </div>
                             </div>
                         </div>
-                        <span><strong>{{ (100 - (host_info.freePhysicalMemory / host_info.totalPhysicalMemory))|round(1, 'floor') }}%</strong> Used</span>
-                        <span class="pull-right"><strong>{{ host_info.totalPhysicalMemory|naturalsize }}</strong> Total</span>
+                        <span><strong>{{ (100 - (host_stats['info'].freePhysicalMemory / host_stats['info'].totalPhysicalMemory))|round(1, 'floor') }}%</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_stats['info'].totalPhysicalMemory|naturalsize }}</strong> Total</span>
                     </div>
                     <div class="row col-md-12">
                         <h5><strong>Heap Usage</strong></h5>
                         <div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar"
-                                        aria-valuenow="{{ (100 * (host_info.heapMemoryInformation.used / host_info.heapMemoryInformation.maximum))|round(0, 'floor') }}"
+                                        aria-valuenow="{{ (100 * (host_stats['info'].heapMemoryInformation.used / host_stats['info'].heapMemoryInformation.maximum))|round(0, 'floor') }}"
                                         aria-valuemin="0" aria-valuemax="100"
-                                        style="width: {{ (100 * (host_info.heapMemoryInformation.used / host_info.heapMemoryInformation.maximum))|round(0, 'floor') }}%;">
+                                        style="width: {{ (100 * (host_stats['info'].heapMemoryInformation.used / host_stats['info'].heapMemoryInformation.maximum))|round(0, 'floor') }}%;">
                                 </div>
                             </div>
                         </div>
-                        <span><strong>{{ (100 * (host_info.heapMemoryInformation.used / host_info.heapMemoryInformation.maximum))|round(1, 'floor') }}%</strong> Used</span>
-                        <span class="pull-right"><strong>{{ host_info.heapMemoryInformation.maximum|naturalsize }}</strong> Total</span>
+                        <span><strong>{{ (100 * (host_stats['info'].heapMemoryInformation.used / host_stats['info'].heapMemoryInformation.maximum))|round(1, 'floor') }}%</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_stats['info'].heapMemoryInformation.maximum|naturalsize }}</strong> Total</span>
                     </div>
                     <div class="row col-md-12">
                         <h5><strong>Non-Heap Usage</strong></h5>
                         <div>
                             <div class="progress">
                                 <div class="progress-bar" role="progressbar"
-                                        aria-valuenow="{{ (100 * (host_info.nonHeapMemoryInformation.used / host_info.nonHeapMemoryInformation.maximum))|round(0, 'floor') }}"
+                                        aria-valuenow="{{ (100 * (host_stats['info'].nonHeapMemoryInformation.used / host_stats['info'].nonHeapMemoryInformation.maximum))|round(0, 'floor') }}"
                                         aria-valuemin="0" aria-valuemax="100"
-                                        style="width: {{ (100 * (host_info.nonHeapMemoryInformation.used / host_info.nonHeapMemoryInformation.maximum))|round(0, 'floor') }}%;">
+                                        style="width: {{ (100 * (host_stats['info'].nonHeapMemoryInformation.used / host_stats['info'].nonHeapMemoryInformation.maximum))|round(0, 'floor') }}%;">
                                 </div>
                             </div>
                         </div>
-                        <span><strong>{{ (100 * (host_info.nonHeapMemoryInformation.used / host_info.nonHeapMemoryInformation.maximum))|round(1, 'floor') }}%</strong> Used</span>
-                        <span class="pull-right"><strong>{{ host_info.nonHeapMemoryInformation.maximum|naturalsize }}</strong> Total</span>
+                        <span><strong>{{ (100 * (host_stats['info'].nonHeapMemoryInformation.used / host_stats['info'].nonHeapMemoryInformation.maximum))|round(1, 'floor') }}%</strong> Used</span>
+                        <span class="pull-right"><strong>{{ host_stats['info'].nonHeapMemoryInformation.maximum|naturalsize }}</strong> Total</span>
                     </div>
                 </div>
             </div>
         </div>
+        {% for key in host_stats['task_scheduler'].__keylist__ %}
+        {% set value = host_stats['task_scheduler'][key] %}
+        <div class="col-md-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4><strong>{{ key }}</strong></h4>
+                </div>
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        {% for k in value.__keylist__ %}
+                        <dt>{{ k }}</dt>
+                        <dd>{{ value[k] }}</dd>
+                        {% endfor %}
+                    </dl>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
     </div>
+</div>
 {% endblock %}

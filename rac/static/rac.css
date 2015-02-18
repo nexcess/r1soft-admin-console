@@ -53,6 +53,13 @@ div.alert {
   border: 0;
 }
 
+.scrollable-menu {
+    height: auto;
+    max-height: 400px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
 /*
  * Sidebar
  */
@@ -109,4 +116,8 @@ div.alert {
 }
 .main .page-header {
   margin-top: 0;
+}
+
+.button-row {
+  margin-bottom: 10px;
 }

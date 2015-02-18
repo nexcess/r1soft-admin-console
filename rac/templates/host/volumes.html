@@ -1,5 +1,6 @@
 {% extends 'host/base.html' %}
 {% do active_elements.append('#nav-se-host-volumes') %}
+{% set current_host_view = 'host_volumes' %}
 {% block title %}Volumes - {{ super() }}{% endblock %}
 {% block host_sub_header %}{{ volumes|length }} Volumes{% endblock %}
 {% block host_content %}

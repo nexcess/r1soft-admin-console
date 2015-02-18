@@ -3,13 +3,37 @@
 {% block host_sub_header %}{{ disksafe.description }}{% endblock %}
 {% block host_content %}
 <div class="row">
-    <div class="row col-md-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">Disk Safe</div>
-            <div class="panel-body">
-                <pre>{{ disksafe }}</pre>
-            </div>
-        </div>
+    <div class="col-md-6">
+        <ul class="list-inline">
+            {% for link in obj_attr_filter(links, 'disksafe_uuid', disksafe.id) %}
+            <li>
+                <a href="{{ url_for('agent_details', host_id=host.id, agent_uuid=link.agent_uuid) }}" class="btn btn-success">
+                    <i class="fa fa-key fa-lg">&nbsp;</i>
+                    Agent
+                </a>
+                <a href="{{ url_for('policy_details', host_id=host.id, policy_uuid=link.policy_uuid) }}" class="btn btn-success">
+                    <i class="fa fa-clipboard fa-lg">&nbsp;</i>
+                    Policy
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <dl class="dl-horizontal">
+            {% for k in disksafe.__keylist__ %}
+            <dt>{{ k }}</dt>
+            {% if k == 'deviceList' %}
+            <dd><em>(not shown)</em></dd>
+            {% elif k == 'diskSafeAttributeMap' %}
+            <dd><em>(not shown)</em></dd>
+            {% else %}
+            <dd>{{ disksafe[k] }}</dd>
+            {% endif %}
+            {% endfor %}
+        </dl>
     </div>
 </div>
 {% endblock %}

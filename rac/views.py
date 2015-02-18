@@ -19,8 +19,9 @@
 
 from rac import app
 from rac.models import R1softHost, UUIDLink
-from rac.util import API_POOL, policy2agent, inflate_tasks, inflate_task_alerts, \
-    sort_tasks
+from rac.util import green_map, policy2agent, inflate_tasks, inflate_task_alerts, \
+    sort_tasks, inflate_task_logs, search_uuid_map
+from rac.forms import HostConfigurationForm
 
 from flask import render_template, request
 import datetime
@@ -34,25 +35,29 @@ def dashboard():
 @app.route('/host/<int:host_id>/')
 def host_details(host_id):
     host = R1softHost.query.get(host_id)
-    disks = sorted(API_POOL.map(host.conn.StorageDisk.service.getStorageDiskByPath,
+    cfg_svc = host.conn.Configuration.service
+    disks = sorted(green_map(host.conn.StorageDisk.service.getStorageDiskByPath,
             host.conn.StorageDisk.service.getStorageDiskPaths()),
         key=lambda i: i.capacityBytes,
         reverse=True)[:3]
+    host_stats = {
+        'info': cfg_svc.getServerInformation(),
+        'license': cfg_svc.getServerLicenseInformation(),
+        'task_scheduler': cfg_svc.getTaskSchedulerStatistics(),
+    }
     return render_template('host/overview.html',
         host=host,
-        host_info=host.conn.Configuration.service.getServerInformation(),
-        host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
+        host_stats=host_stats,
         policies=host.conn.Policy2.service.getPolicies(),
         volumes=host.conn.Volume.service.getVolumes(),
         disks=disks,
-        agents=host.conn.Agent.service.getAgents())
+        agent_count=len(host.conn.Agent.service.getAgentIDs()))
 
 @app.route('/host/<int:host_id>/volumes/')
 def host_volumes(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host/volumes.html',
         host=host,
-        host_lic_info=host.conn.Configuration.service.getServerLicenseInformation(),
         volumes=host.conn.Volume.service.getVolumes())
 
 @app.route('/host/<int:host_id>/agents/')
@@ -105,8 +110,30 @@ def host_users(host_id):
 @app.route('/host/<int:host_id>/configuration')
 def host_configuration(host_id):
     host = R1softHost.query.get(host_id)
+    cfg_svc = host.conn.Configuration.service
+    config = {
+        'disk_quotas': cfg_svc.getDiskQuotas(),
+        'task_history_limit': cfg_svc.getTaskHistoryLimit(),
+        'http_options': cfg_svc.getHTTPOptions(),
+        'ssl_options': cfg_svc.getSSLOptions(),
+        'maintenance_mode': cfg_svc.getMaintenanceMode(),
+    }
+    config_form = HostConfigurationForm(
+        soft_quota=config['disk_quotas'].softQuota,
+        hard_quota=config['disk_quotas'].hardQuota,
+        task_history_limit=config['task_history_limit'],
+        http_enabled=config['http_options'].isEnabled,
+        http_port=config['http_options'].portNumber,
+        http_max_conn=config['http_options'].maxConnections,
+        https_enabled=config['ssl_options'].isEnabled,
+        https_port=config['ssl_options'].portNumber,
+        https_max_conn=config['ssl_options'].maxConnections,
+        https_keystore=config['ssl_options'].keyStorePath
+    )
     return render_template('host/configuration.html',
-        host=host)
+        host=host,
+        host_config=config,
+        config_form=config_form)
 
 @app.route('/host/<int:host_id>/api-proxy/<namespace>/<method>', methods=['POST'])
 def host_api_proxy(host_id, namespace, method):
@@ -122,7 +149,7 @@ def host_api_proxy(host_id, namespace, method):
 def agent_details(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
     agent = host.conn.Agent.service.getAgentByID(agent_uuid)
-    links = UUIDLink.query.filter_by(agent_uuid=agent_uuid)
+    links = search_uuid_map(agent.hostname, agent.description)
     return render_template('host/details/agent.html',
         host=host,
         links=links,
@@ -132,7 +159,7 @@ def agent_details(host_id, agent_uuid):
 def disksafe_details(host_id, disksafe_uuid):
     host = R1softHost.query.get(host_id)
     disksafe = host.conn.DiskSafe.service.getDiskSafeByID(disksafe_uuid)
-    links = UUIDLink.query.filter_by(disksafe_uuid=disksafe_uuid)
+    links = search_uuid_map(disksafe.description)
     return render_template('host/details/disksafe.html',
         host=host,
         links=links,
@@ -150,7 +177,7 @@ def volume_details(host_id, volume_uuid):
 def policy_details(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     policy = host.conn.Policy2.service.getPolicyById(policy_uuid)
-    links = UUIDLink.query.filter_by(policy_uuid=policy_uuid)
+    links = search_uuid_map(policy.name, policy.description)
     return render_template('host/details/policy.html',
         host=host,
         links=links,
@@ -179,7 +206,7 @@ def policy_directory_collection_data(host_id):
     }
     policy_data = []
 
-    for (agent, policy) in zip(API_POOL.map(policy2agent, policies), policies):
+    for (agent, policy) in zip(green_map(policy2agent, policies), policies):
         if agent is None: continue
         policy_extra_data = {
             'real_state':       None,

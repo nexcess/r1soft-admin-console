@@ -1,11 +1,95 @@
 {% extends 'host/base.html' %}
 {% do active_elements.append('#nav-se-host-configuration') %}
+{% set current_host_view = 'host_configuration' %}
 {% block title %}Configuration - {{ super() }}{% endblock %}
 {% block host_content %}
 <div class="row">
-    <h2>Configuration</h2>
-    <div class="row">
-        Not Yet Implemented
+    <div class="col-md-12 button-row">
+        <a class="btn btn-success pull-right" href="#">
+            <i class="fa fa-floppy-o fa-lg">&nbsp;</i>
+            Save Configuration
+        </a>
+        {% if host_config['maintenance_mode'] %}
+        <a href="#" class="btn btn-success">
+            <i class="fa fa-check fa-lg">&nbsp;</i>
+            Maintenance Mode: ON
+        </a>
+        {% else %}
+        <a href="#" class="btn btn-danger">
+            <i class="fa fa-times fa-lg">&nbsp;</i>
+            Maintenance Mode: OFF
+        </a>
+        {% endif %}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <form action="#" method="POST">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td colspan="2">
+                            <h3>Manager Options</h3>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.soft_quota.label }}</td>
+                        <td>{{ config_form.soft_quota(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.hard_quota.label }}</td>
+                        <td>{{ config_form.hard_quota(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.task_history_limit.label }}</td>
+                        <td>{{ config_form.task_history_limit(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <h3>Web Server Options</h3>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <h4 class="pull-right">HTTP</h4>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.http_enabled.label }}</td>
+                        <td>{{ config_form.http_enabled(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.http_port.label }}</td>
+                        <td>{{ config_form.http_port(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.http_max_conn.label }}</td>
+                        <td>{{ config_form.http_max_conn(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <h4 class="pull-right">HTTPS</h4>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.https_enabled.label }}</td>
+                        <td>{{ config_form.https_enabled(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.https_port.label }}</td>
+                        <td>{{ config_form.https_port(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.https_max_conn.label }}</td>
+                        <td>{{ config_form.https_max_conn(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ config_form.https_keystore.label }}</td>
+                        <td>{{ config_form.https_keystore(class='form-control') }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
     </div>
 </div>
 {% endblock %}

@@ -1,5 +1,6 @@
 {% extends 'host/base.html' %}
 {% do active_elements.append('#nav-se-host-task-history') %}
+{% set current_host_view = 'host_task_history' %}
 {% block title %}Task History - {{ super() }}{% endblock %}
 {% block host_sub_header %}{{ tasks|length }} Tasks from the past {{ config['R1SOFT_TASK_HISTORY_DAYS'] }} days{% endblock %}
 {% block host_content %}

@@ -3,34 +3,46 @@
 {% block host_sub_header %}{{ agent.hostname }}{% endblock %}
 {% block host_content %}
 <div class="row">
-    <div class="row col-md-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">Agent</div>
-            <div class="panel-body">
-                <pre>{{ agent }}</pre>
-            </div>
-        </div>
+    <div class="col-md-6">
+        <ul class="list-inline">
+            {% for link in obj_attr_filter(links, 'agent_uuid', agent.id) %}
+            <li>
+                <a href="{{ url_for('disksafe_details', host_id=host.id, disksafe_uuid=link.disksafe_uuid) }}" class="btn btn-success">
+                    <i class="fa fa-key fa-lg">&nbsp;</i>
+                    Disksafe
+                </a>
+                <a href="{{ url_for('policy_details', host_id=host.id, policy_uuid=link.policy_uuid) }}" class="btn btn-success">
+                    <i class="fa fa-clipboard fa-lg">&nbsp;</i>
+                    Policy
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
-    {% for link in links %}
-    <div class="row col-md-12">
-        <div class="col-md-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">Policy</div>
-                <div class="panel-body">
-                    <pre>{{ link.policy }}</pre>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">Disk Safe</div>
-                <div class="panel-body">
-                    <pre>{{ link.disksafe }}</pre>
-                </div>
-            </div>
-        </div>
+    <div class="col-md-offset-6 col-md-6">
+        <ul class="list-inline pull-right">
+            {% for link in links %}
+            {% if link.agent_uuid != agent.id %}
+            <li>
+                <a href="{{ url_for('agent_details', host_id=link.host.id, agent_uuid=link.agent_uuid) }}" class="btn btn-primary">
+                    <i class="fa fa-link fa-lg">&nbsp;</i>
+                    See on {{ link.host.hostname }}
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
     </div>
-    {% endfor %}
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <dl class="dl-horizontal">
+            {% for k in agent.__keylist__ %}
+            <dt>{{ k }}</dt>
+            <dd>{{ agent[k] }}</dd>
+            {% endfor %}
+        </dl>
+    </div>
 </div>
 {% endblock %}
 {% block customjs %}{% endblock %}

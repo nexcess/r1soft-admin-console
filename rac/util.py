@@ -18,7 +18,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 from rac import app
-from rac.models import R1softHost, UUIDLink
+from rac.models import R1softHost, UUIDLink, or_, and_
 
 import gevent.pool
 from suds.sudsobject import asdict
@@ -69,7 +69,7 @@ ICONIZE_MAP = {
     'SEVERE':           'fa fa-flag text-danger',
 
     # Log Source
-    'SERVER':           'fa fa-database text-primary',
+    'SERVER':           'fa fa-server text-primary',
     'AGENT':            'fa fa-desktop text-primary',
 
     # UserType
@@ -110,7 +110,6 @@ def soap2native(soap_obj):
         native_obj = soap_obj
     return native_obj
 
-
 def policy2agent(policy):
     link = UUIDLink.query.filter_by(policy_uuid=policy.id).first()
     try:
@@ -130,30 +129,40 @@ def sort_tasks(task_list):
 
 def inflate_tasks(host, task_id_list, with_alert_ids=False, with_log_message_ids=False):
     get_task_func = host.conn.TaskHistory.service.getTaskExecutionContextByID
-    tasks = API_POOL.map(get_task_func, task_id_list)
+    tasks = green_map(get_task_func, task_id_list)
     if with_alert_ids:
         get_alert_ids_func = host.conn.TaskHistory.service.getAlertIDsByTaskExecutionContextID
         def add_alerts(task):
             task.alertIDs = get_alert_ids_func(task.id)
-        API_POOL.map(add_alerts, tasks)
+        green_map(add_alerts, tasks)
     if with_log_message_ids:
         get_message_ids_func = host.conn.TaskHistory.service.getLogMessageIDsByTaskExecutionContextID
         def add_messages(task):
             task.logMessageIDs = get_message_ids_func(task.id)
-        API_POOL.map(add_messages, tasks)
+        green_map(add_messages, tasks)
     return tasks
 
 def inflate_task_alerts(host, task):
     if not hasattr(task, 'alertIDs'):
         task.alertIDs = host.conn.TaskHistory.service.getAlertIDsByTaskExecutionContextID(task.id)
-    task.alerts = API_POOL.map(lambda aid: host.conn.TaskHistory.service.getAlertByID(task.id, aid), task.alertIDs)
+    task.alerts = green_map(lambda aid: host.conn.TaskHistory.service.getAlertByID(task.id, aid), task.alertIDs)
     return task
 
 def inflate_task_logs(host, task):
     if not hasattr(task, 'logMessageIDs'):
         task.logMessageIDs = host.conn.TaskHistory.service.getLogMessageIDsByTaskExecutionContextID(task.id)
-    task.logMessages = API_POOL.map(lambda mid: host.conn.TaskHistory.service.getLogMessageByID(task.id, mid), task.logMessageIDs)
+    task.logMessages = green_map(lambda mid: host.conn.TaskHistory.service.getLogMessageByID(task.id, mid), task.logMessageIDs)
     return task
+
+def search_uuid_map(*search_terms):
+    search_fields = ['policy_name', 'disksafe_desc', 'agent_hostname']
+    conditions = [getattr(UUIDLink, field).__eq__(search_term) \
+            for field in search_fields \
+        for search_term in search_terms]
+    return UUIDLink.query.filter(or_(*conditions)).all()
+
+def green_map(func, iterable):
+    return API_POOL.map(func, iterable)
 
 @app.context_processor
 def inject_hosts():
@@ -161,7 +170,7 @@ def inject_hosts():
 
 @app.context_processor
 def inject_thing():
-    return {'active_elements': []}
+    return {'active_elements': [], 'search_uuid_map': search_uuid_map}
 
 @app.context_processor
 def inject_obj_attr_filter():

@@ -1,5 +1,6 @@
 {% extends 'host/base.html' %}
 {% do active_elements.append('#nav-se-host-recovery-points') %}
+{% set current_host_view = 'host_recovery_points' %}
 {% block title %}Recovery Points - {{ super() }}{% endblock %}
 {% block host_content %}
 <div class="row">

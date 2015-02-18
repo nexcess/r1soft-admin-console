@@ -21,6 +21,7 @@ from rac import app, db
 
 from r1soft.cdp3 import CDP3Client
 from flask import Markup, url_for
+from sqlalchemy import or_, and_
 import datetime
 
 

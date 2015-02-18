@@ -41,10 +41,17 @@
                             <a href="{{ url_for('dashboard') }}"><i class="fa fa-bar-chart">&nbsp;</i>Dashboard</a>
                         </li>
                         <li id="nav-e-host" class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-server">&nbsp;</i>CDP Hosts <span class="caret"></span></a>
-                            <ul class="dropdown-menu" role="menu">
+                            {% if current_host_view is defined %}
+                                {% set NAV_host_view = current_host_view %}
+                            {% else %}
+                                {% set NAV_host_view = 'host_details' %}
+                            {% endif %}
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                                <i class="fa fa-server">&nbsp;</i>CDP Hosts <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu scrollable-menu" role="menu">
                             {% for host in NAV_hosts %}
-                                <li><a href="{{ url_for('host_details', host_id=host.id) }}">{{ host.hostname }}</a></li>
+                                <li id="#nav-li-host-{{ host.id }}"><a href="{{ url_for(NAV_host_view, host_id=host.id) }}">{{ host.hostname }}</a></li>
                             {% endfor %}
                             </ul>
                         </li>

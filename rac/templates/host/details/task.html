@@ -4,13 +4,15 @@
 {% block host_sub_header %}{{ task_name }}{% endblock %}
 {% block host_content %}
 <div class="row">
-    <div class="row col-md-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">Task</div>
-            <div class="panel-body">
-                <pre>{{ task }}</pre>
-            </div>
-        </div>
+    <div class="row">
+        <dl class="dl-horizontal">
+            {% for k in task.__keylist__ %}
+            {% if k not in ('alerts', 'alertIDs', 'logMessageIDs', 'logMessages') %}
+            <dt>{{ k }}</dt>
+            <dd>{{ task[k] }}</dd>
+            {% endif %}
+            {% endfor %}
+        </dl>
     </div>
     {% if task.alerts %}
     <h2>Alerts</h2>

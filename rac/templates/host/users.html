@@ -1,5 +1,6 @@
 {% extends 'host/base.html' %}
 {% do active_elements.append('#nav-se-host-users') %}
+{% set current_host_view = 'host_users' %}
 {% block title %}Users - {{ super() }}{% endblock %}
 {% block host_sub_header %}{{ users|length }} Users{% endblock %}
 {% block host_content %}

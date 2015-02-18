@@ -3,13 +3,45 @@
 {% block host_sub_header %}{{ policy.name }}{% endblock %}
 {% block host_content %}
 <div class="row">
-    <div class="row col-md-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">Policy</div>
-            <div class="panel-body">
-                <pre>{{ policy }}</pre>
-            </div>
-        </div>
+    <div class="col-md-6">
+        <ul class="list-inline">
+            {% for link in obj_attr_filter(links, 'policy_uuid', policy.id) %}
+            <li>
+                <a href="{{ url_for('agent_details', host_id=host.id, agent_uuid=link.agent_uuid) }}" class="btn btn-success">
+                    <i class="fa fa-key fa-lg">&nbsp;</i>
+                    Agent
+                </a>
+                <a href="{{ url_for('disksafe_details', host_id=host.id, disksafe_uuid=link.disksafe_uuid) }}" class="btn btn-success">
+                    <i class="fa fa-key fa-lg">&nbsp;</i>
+                    Disksafe
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="col-md-offset-6 col-md-6">
+        <ul class="list-inline pull-right">
+            {% for link in links %}
+            {% if link.policy_uuid != policy.id %}
+            <li>
+                <a href="{{ url_for('policy_details', host_id=link.host.id, policy_uuid=link.policy_uuid) }}" class="btn btn-primary">
+                    <i class="fa fa-link fa-lg">&nbsp;</i>
+                    See on {{ link.host.hostname }}
+                </a>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <dl class="dl-horizontal">
+            {% for k in policy.__keylist__ %}
+            <dt>{{ k }}</dt>
+            <dd>{{ policy[k] }}</dd>
+            {% endfor %}
+        </dl>
     </div>
 </div>
 {% endblock %}

@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
 {% do active_elements.append('#nav-e-host') %}
+{% do active_elements.append('#nav-li-host-%d' % host.id) %}
 {% block title %}{{ host.hostname }}{% endblock %}
 {% block content %}
     <div class="row">
-        <div class="col-md-2 sidebar">
+        <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
                 <li id="nav-se-host-overview">
                     <a href="{{ url_for('host_details', host_id=host.id) }}">
-                        Overview<i class="fa fa-tachometer pull-right"></i>
+                        Info<i class="fa fa-tachometer pull-right"></i>
                     </a>
                 </li>
                 <li id="nav-se-host-policies">
@@ -57,17 +58,11 @@
                 </li>
             </ul>
         </div>
-        <div class="col-md-10 col-md-offset-2 main">
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
             <h1 class="page-header">
                 <strong>{{ host.hostname }}</strong>
                 <small class="pull-right">
-                {% block host_sub_header %}
-                {% if host_lic_info is defined %}
-                    CDP Version: {{ host_lic_info.version or 'UNKNOWN'}}
-                {% else %}
-                    User: {{ host.username }}
-                {% endif %}
-                {% endblock %}
+                {% block host_sub_header %}User: {{ host.username }}{% endblock %}
                 </small>
             </h1>
             {% block host_content %}{% endblock %}
