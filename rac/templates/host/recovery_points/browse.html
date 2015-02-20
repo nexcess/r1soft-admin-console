@@ -41,7 +41,7 @@
             </colgroup>
             <thead>
                 <tr>
-                    <th>
+                    <th data-sorter="false">
                         <input type="checkbox" id="check-all-checkbox">
                     </th>
                     <th>Type</th>
@@ -119,9 +119,6 @@
                 pathOnClickHandler(urlTemplate + base64encode($(this).val()), true);
             }
         });
-        $("#check-all-checkbox").click(function() {
-            $("input:checked[name=file_names]").prop("checked", $(this).checked);
-        });
 
         pathOnClickHandler(rootDataUrl, true);
 
@@ -132,6 +129,11 @@
                 filter_external: $("#nav-filter-input"),
                 filter_columnFilters: false,
             }
+        });
+
+        // this has to be after the tablesorter init or the onclick won't bubble up
+        $("#check-all-checkbox").click(function() {
+            $(":checkbox.rac-select-for-restore").prop("checked", this.checked);
         });
     });
 </script>

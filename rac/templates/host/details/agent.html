@@ -35,7 +35,8 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-6">
+        <h3>Server-side</h3>
         <dl class="dl-horizontal">
             {% for k in agent.__keylist__ %}
             <dt>{{ k }}</dt>
@@ -43,6 +44,17 @@
             {% endfor %}
         </dl>
     </div>
+    {% if agent_opts %}
+    <div class="col-md-6 pull-right">
+        <h3>Client-side</h3>
+        <dl class="dl-horizontal">
+            {% for k in agent_opts.__keylist__ %}
+            <dt>{{ k }}</dt>
+            <dd>{{ agent_opts[k] }}</dd>
+            {% endfor %}
+        </dl>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
 {% block customjs %}{% endblock %}

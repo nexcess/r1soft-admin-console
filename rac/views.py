@@ -106,6 +106,27 @@ def host_agent_recovery_points(host_id, agent_uuid):
         agent=agent,
         collection_data=collection_data)
 
+@app.route('/host/<int:host_id>/recovery-points/disk-safe/<ds_uuid>/point/<int:rp_id>/lock')
+def host_agent_recovery_points_lock(host_id, ds_uuid, rp_id):
+    host = R1softHost.query.get(host_id)
+    rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
+    host.conn.RecoveryPoints2.service.lockRecoveryPoint(rp)
+    return redirect(url_for('host_recovery_points', host_id=host.id))
+
+@app.route('/host/<int:host_id>/recovery-points/disk-safe/<ds_uuid>/point/<int:rp_id>/unlock')
+def host_agent_recovery_points_unlock(host_id, ds_uuid, rp_id):
+    host = R1softHost.query.get(host_id)
+    rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
+    host.conn.RecoveryPoints2.service.unlockRecoveryPoint(rp)
+    return redirect(url_for('host_recovery_points', host_id=host.id))
+
+@app.route('/host/<int:host_id>/recovery-points/disk-safe/<ds_uuid>/point/<int:rp_id>/merge')
+def host_agent_recovery_points_merge(host_id, ds_uuid, rp_id):
+    host = R1softHost.query.get(host_id)
+    rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
+    host.conn.RecoveryPoints2.service.mergeRecoveryPoint(rp)
+    return redirect(url_for('host_recovery_points', host_id=host.id))
+
 @app.route('/host/<int:host_id>/recovery-points/disk-safe/<ds_uuid>/point/<int:rp_id>/')
 def host_agent_recovery_points_browse(host_id, ds_uuid, rp_id):
     host = R1softHost.query.get(host_id)
@@ -260,10 +281,15 @@ def host_api_proxy(host_id, namespace, method):
 def agent_details(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
     agent = host.conn.Agent.service.getAgentByID(agent_uuid)
+    if agent.osType != 'UNKNOWN':
+        remote_opts = host.conn.Agent.service.getRemoteAgentOptions(agent.id)
+    else:
+        remote_opts = False
     links = search_uuid_map(agent.hostname, agent.description)
     return render_template('host/details/agent.html',
         host=host,
         links=links,
+        agent_opts=remote_opts,
         agent=agent)
 
 @app.route('/host/<int:host_id>/disksafes/<disksafe_uuid>/')
@@ -312,6 +338,10 @@ def task_details(host_id, task_uuid):
         host.conn.TaskHistory.service.getTaskExecutionContextByID(task_uuid)))
     if hasattr(task, 'agentId'):
         link = UUIDLink.query.filter_by(agent_uuid=task.agentId).first()
+        if task.taskType == 'FILE_RESTORE':
+            task.fileRestoreStatistics = host.conn.TaskHistory.service.getFileRestoreStatistics(task.id)
+        if task.taskType == 'MERGE_RECOVERY_POINTS':
+            task.mergeStatistics = host.conn.TaskHistory.service.getMergeStatistics(task.id)
     else:
         link = False
     return render_template('host/details/task.html',

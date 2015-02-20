@@ -23,7 +23,7 @@ from rac.models import R1softHost, UUIDLink, or_, and_
 import gevent.pool
 from suds.sudsobject import asdict
 from flask import Markup, render_template
-from humanize import naturalsize, naturaltime
+from humanize import naturalsize, naturaltime, naturaldelta
 import datetime
 
 
@@ -43,7 +43,7 @@ ICONIZE_MAP = {
     # RecoveryPointState
     'REPLICATING':      'fa fa-files-o text-primary',
     'AVAILABLE':        'fa fa-check-circle-o text-success',
-    # 'MERGING':          '',
+    'MERGING':          'fa fa-spinner fa-pulse text-primary',
     # 'MERGED':           '',
     'LOCKED':           'fa fa-lock',
     # 'REPLICATION_INTERRUPTED':   '',
@@ -194,13 +194,21 @@ def iconize_filter(s, space_left=False, space_right=False):
         icon_opts=icon_opts))
 
 @app.template_filter('naturalsize')
-def naturalsize_filter(s):
+def inject_naturalsize(s):
     return naturalsize(s)
 
 @app.template_filter('naturaltime')
-def naturaltime(dt):
+def inject_naturaltime(dt):
     return naturaltime(dt)
+
+@app.template_filter('naturaldelta')
+def inject_naturaldelta(td):
+    return naturaldelta(td)
 
 @app.template_filter('ms_to_datetime')
 def convert_ms_to_datetime(ms):
     return datetime.datetime.fromtimestamp(ms // 1000)
+
+@app.template_filter('ms_to_timedelta')
+def convert_ms_to_timedelta(ms):
+    return datetime.timedelta(milliseconds=ms)

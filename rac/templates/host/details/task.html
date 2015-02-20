@@ -33,13 +33,42 @@
     <div class="row col-md-12">
         <dl class="dl-horizontal">
             {% for k in task.__keylist__ %}
-            {% if k not in ('alerts', 'alertIDs', 'logMessageIDs', 'logMessages') %}
+            {% if k not in ('alerts', 'alertIDs', 'logMessageIDs', 'logMessages', 'mergeStatistics', 'fileRestoreStatistics') %}
             <dt>{{ k }}</dt>
             <dd>{{ task[k] }}</dd>
             {% endif %}
             {% endfor %}
         </dl>
     </div>
+    {% if task.taskState == 'RUNNING' and task.taskType in ('FILE_RESTORE', 'MERGE_RECOVERY_POINTS') %}
+    {% if task.mergeStatistics %}
+    <div class="row col-md-12">
+        <div class="row">
+            <div class="col-md-3">
+                <label>Elapsed Time</label>
+                {{ task.mergeStatistics.currentTotalTimeElapsedMillis|ms_to_timedelta|naturaldelta }}
+            </div>
+            <div class="pull-right col-md-2">
+                <label>Devices:</label>
+                {{ task.mergeStatistics.deviceCount }} / {{ task.mergeStatistics.finishedDeviceCount }}
+            </div>
+        </div>
+        <div class="progress">
+            <div class="progress-bar" role="progress-bar"
+                    aria-valuenow="{{ task.mergeStatistics.progressPercentValue }}"
+                    aria-valuemin="0" aria-valuemax="100"
+                    style="width: {{ task.mergeStatistics.progressPercentValue|int }}%;">
+                <span class="sr-only">{{ task.mergeStatistics.progressPercentValue }}</span>
+            </div>
+        </div>
+    </div>
+    {% elif task.fileRestoreStatistics %}
+    <div class="row col-md-12">
+        <label>Files Restored</label>
+        <span class="text-success">{{ task.fileRestoreStatistics.totalSuccessfulRestores }}</span>+<span class="text-danger">{{ task.fileRestoreStatistics.totalFailedRestores }}</span> / ~{{ task.fileRestoreStatistics. estimatedFilesToBeRestored }}
+    </div>
+    {% endif %}
+    {% endif %}
     {% if task.alerts %}
     <h2>Alerts</h2>
     <div class="row col-md-12">

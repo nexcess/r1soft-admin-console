@@ -11,19 +11,19 @@
             <i title="Browse" class="fa fa-folder-open fa-lg text-warning icon-space-right"></i>
             Browse
         </a>
-        <a class="btn btn-default btn-xs" href="#">
+        <a class="btn btn-default btn-xs" href="{{ url_for('host_agent_recovery_points_lock', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID) }}">
             <i title="Lock" class="fa fa-lock fa-lg icon-space-right"></i>
             Lock
         </a>
         {% endif %}
         {% if recovery_point.recoveryPointState not in ('MERGING', 'MERGED', 'LOCKED') %}
-        <a class="btn btn-default btn-xs" href="#">
+        <a class="btn btn-default btn-xs" href="{{ url_for('host_agent_recovery_points_merge', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID) }}">
             <i title="Merge" class="fa fa-times fa-lg text-danger icon-space-right"></i>
             Merge
         </a>
         {% endif %}
         {% if recovery_point.recoveryPointState == 'LOCKED' %}
-        <a class="btn btn-default btn-xs" href="#">
+        <a class="btn btn-default btn-xs" href="{{ url_for('host_agent_recovery_points_unlock', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID) }}">
             <i title="Unlock" class="fa fa-unlock-alt fa-lg icon-space-right"></i>
             Unlock
         </a>
