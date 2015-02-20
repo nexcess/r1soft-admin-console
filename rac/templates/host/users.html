@@ -20,6 +20,7 @@
                         <th>Authentication Type</th>
                         <th>Use LDAP</th>
                         <th>Attributes</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,6 +36,21 @@
                         <td>{{ 'DISABLED'|iconize }}</td>
                         {% endif %}
                         <td>{{ user.userAttributes }}</td>
+                        <td>
+                            {{ mk_link_button('#',
+                                    'Edit', 'pencil-square-o') }}
+                        {#
+                            {% if user.enabled %}
+                            {{ mk_form_button(url_for('host_users_disable', host_id=host.id, user_uuid=user.id),
+                                    'Disable', 'circle', 'danger') }}
+                            {% else %}
+                            {{ mk_form_button(url_for('host_users_enable', host_id=host.id, user_uuid=user.id),
+                                    'Enable', 'circle', 'success') }}
+                            {% endif %}
+                        #}
+                            {{ mk_form_button(url_for('host_users_delete', host_id=host.id, user_uuid=user.id),
+                                    'Delete', 'times', 'danger', submit_method='DELETE') }}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>

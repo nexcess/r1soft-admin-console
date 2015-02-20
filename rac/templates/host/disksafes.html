@@ -20,6 +20,7 @@
                         <th>Devices</th>
                         <th>On Disk Size</th>
                         <th>Delta Size</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -31,6 +32,21 @@
                         <td>{{ disksafe.deviceCount }}</td>
                         <td>{{ disksafe.bytesOnDisk|naturalsize }}</td>
                         <td>{{ disksafe.sizeOfDeltasInDiskSafe|naturalsize }}</td>
+                        <td>
+                            {{ mk_link_button('#',
+                                    'Edit', 'pencil-square-o') }}
+                            {% if disksafe.open %}
+                            {{ mk_form_button(url_for('host_disksafes_close', host_id=host.id, ds_uuid=disksafe.id),
+                                    'Close', 'pause', 'info') }}
+                            {% else %}
+                            {{ mk_form_button(url_for('host_disksafes_open', host_id=host.id, ds_uuid=disksafe.id),
+                                    'Open', 'play', 'success') }}
+                            {% endif %}
+                            {{ mk_form_button(url_for('host_disksafes_detach', host_id=host.id, ds_uuid=disksafe.id),
+                                    'Detach', 'chain-broken') }}
+                            {{ mk_form_button(url_for('host_disksafes_delete', host_id=host.id, ds_uuid=disksafe.id),
+                                    'Delete', 'times', 'danger', submit_method='DELETE') }}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>

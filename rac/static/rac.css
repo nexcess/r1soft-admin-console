@@ -134,3 +134,7 @@ i.icon-space-right {
 i.icon-space-left {
   margin-left: .3em;
 }
+
+.rac-single-button-form {
+  display: inline;
+}

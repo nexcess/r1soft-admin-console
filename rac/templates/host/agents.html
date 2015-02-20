@@ -21,6 +21,7 @@
                         <th>Agent Version</th>
                         <th>Links</th>
                         <th>DB Addon Enabled</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,6 +34,12 @@
                         <td>{{ agent.lastKnownAgentVersion }}</td>
                         <td>{{ search_uuid_map(agent.hostname, agent.description)|length }}</td>
                         <td>{{ agent.databaseAddOnEnabled|iconize }}</td>
+                        <td>
+                            {{ mk_link_button('#',
+                                    'Edit', 'pencil-square-o') }}
+                            {{ mk_form_button(url_for('host_agents_delete', host_id=host.id, agent_uuid=agent.id),
+                                    'Delete', 'times', 'danger', submit_method='DELETE') }}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>

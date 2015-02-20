@@ -19,9 +19,9 @@
                         <th>Name</th>
                         <th>Description</th>
                         <th>Frequency</th>
-                        <th>Links</th>
                         <th>Last Run Time</th>
                         <th>Next Run Time</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,9 +32,25 @@
                         <td><a href="{{ url_for('policy_details', host_id=host.id, policy_uuid=policy.id) }}">{{ policy.name }}</a></td>
                         <td>{{ policy.description }}</td>
                         <td>{{ policy.replicationScheduleFrequencyType|capitalize }}</td>
-                        <td>{{ search_uuid_map(policy.name, policy.description)|length }}</td>
                         <td>{% if policy.lastReplicationRunTime is defined %}{{ policy.lastReplicationRunTime.replace(microsecond=0) }}{% endif %}</td>
                         <td>{{ policy.nextReplicationRunTime }}</td>
+                        <td>
+                            {{ mk_link_button('#',
+                                    'Edit', 'pencil-square-o', show_text=False) }}
+                            {{ mk_form_button(url_for('host_policies_run', host_id=host.id, policy_uuid=policy.id),
+                                    'Run', 'play', 'primary', show_text=False) }}
+                            {{ mk_form_button(url_for('host_policies_disksafe_verify', host_id=host.id, policy_uuid=policy.id),
+                                    'Verify', 'play', 'success', show_text=False) }}
+                            {% if policy.enabled %}
+                            {{ mk_form_button(url_for('host_policies_disable', host_id=host.id, policy_uuid=policy.id),
+                                    'Disable', 'circle', 'danger', show_text=False) }}
+                            {% else %}
+                            {{ mk_form_button(url_for('host_policies_enable', host_id=host.id, policy_uuid=policy.id),
+                                    'Enable', 'circle', 'success', show_text=False) }}
+                            {% endif %}
+                            {{ mk_form_button(url_for('host_policies_delete', host_id=host.id, policy_uuid=policy.id),
+                                    'Delete', 'times', 'danger', show_text=False, submit_method='DELETE') }}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>

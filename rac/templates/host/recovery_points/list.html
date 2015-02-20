@@ -1,3 +1,4 @@
+{% from 'macros/buttons.html' import mk_link_button, mk_form_button %}
 {% for disksafe, recovery_points in collection_data.iteritems() %}
     {% for recovery_point in recovery_points %}
 <tr id="{{ disksafe.id }}:{{ recovery_point.recoveryPointID }}">
@@ -7,26 +8,18 @@
     <td>{{ recovery_point.devices|length }}</td>
     <td>
         {% if recovery_point.recoveryPointState == 'AVAILABLE' %}
-        <a class="btn btn-default btn-xs" href="{{ url_for('host_agent_recovery_points_browse', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID) }}">
-            <i title="Browse" class="fa fa-folder-open fa-lg text-warning icon-space-right"></i>
-            Browse
-        </a>
-        <a class="btn btn-default btn-xs" href="{{ url_for('host_agent_recovery_points_lock', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID) }}">
-            <i title="Lock" class="fa fa-lock fa-lg icon-space-right"></i>
-            Lock
-        </a>
+        {{ mk_link_button(url_for('host_agent_recovery_points_browse', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID),
+                'Browse', 'folder-open', 'warning') }}
+        {{ mk_form_button(url_for('host_agent_recovery_points_lock', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID),
+                'Lock', 'lock') }}
         {% endif %}
         {% if recovery_point.recoveryPointState not in ('MERGING', 'MERGED', 'LOCKED') %}
-        <a class="btn btn-default btn-xs" href="{{ url_for('host_agent_recovery_points_merge', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID) }}">
-            <i title="Merge" class="fa fa-times fa-lg text-danger icon-space-right"></i>
-            Merge
-        </a>
+        {{ mk_form_button(url_for('host_agent_recovery_points_merge', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID),
+                'Merge', 'times', 'danger') }}
         {% endif %}
         {% if recovery_point.recoveryPointState == 'LOCKED' %}
-        <a class="btn btn-default btn-xs" href="{{ url_for('host_agent_recovery_points_unlock', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID) }}">
-            <i title="Unlock" class="fa fa-unlock-alt fa-lg icon-space-right"></i>
-            Unlock
-        </a>
+        {{ mk_form_button(url_for('host_agent_recovery_points_unlock', host_id=host.id, ds_uuid=disksafe.id, rp_id=recovery_point.recoveryPointID),
+                'Unlock', 'unlock-alt') }}
         {% endif %}
     </td>
 </tr>

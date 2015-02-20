@@ -19,6 +19,7 @@
                         <th>Start Time</th>
                         <th>End Time</th>
                         <th>Run Time</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,6 +45,15 @@
                         <td></td>
                         <td></td>
                         {% endif %}
+                        <td>
+                            {% if task.taskState in ('RUNNING', 'QUEUED') %}
+                            {{ mk_form_button(url_for(''),
+                                    'Cancel', 'times', 'danger') }}
+                            {% else %}
+                            {{ mk_form_button('#',
+                                    'Rerun', 'repeat', 'primary') }}
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endif %}
                 {% endfor %}
