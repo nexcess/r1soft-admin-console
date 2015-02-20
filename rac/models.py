@@ -138,3 +138,104 @@ class UUIDLink(db.Model):
     @property
     def policy_url(self):
         return url_for('policy_details', host_id=self.host.id, policy_uuid=self.policy_uuid)
+
+class PolicyTemplate(db.Model):
+    id                              = db.Column(db.Integer(), primary_key=True)
+
+    merge_frequency                 = db.Column(db.String(255), nullable=False)
+    merge_frequency_values          = db.Column(db.String(255))
+
+    replication_frequency           = db.Column(db.String(255))
+    replication_frequency_values    = db.Column(db.String(255))
+
+    verification_frequency          = db.Column(db.String(255))
+    verification_frequncy_values    = db.Column(db.String(255))
+
+    enabled                         = db.Column(db.Boolean(), nullable=False)
+    recovery_point_limit            = db.Column(db.Integer(), nullable=False)
+    force_full_block_scan           = db.Column(db.Boolean(), nullable=False)
+
+    backup_database                 = db.Column(db.Boolean(), nullable=False)
+    database_type                   = db.Column(db.String(255))
+    database_name                   = db.Column(db.String(255))
+    database_hostname               = db.Column(db.String(255))
+    database_port                   = db.Column(db.Integer())
+    database_username               = db.Column(db.String(255))
+    database_username               = db.Column(db.String(255))
+    database_data_dir               = db.Column(db.String(4096))
+    database_install_dir            = db.Column(db.String(4096))
+
+    def populate_new_policy_object(self, host):
+        create_type = host.conn.Policy2.factory.create
+        policy = create_type('policy')
+        freq_type = create_type('frequencyType')
+
+        policy.enabled = self.enabled
+        policy.recoveryPointLimit = self.recovery_point_limit
+        policy.forceFullBlockScan = self.force_full_block_scan
+
+        if self.replication_frequency:
+            policy.replicationScheduleFrequencyType = freq_type[self.replication_frequency]
+            policy.replicationScheduleFrequencyValues = self._populateFrequencyValues(
+                host, self.replication_frequency, self.replication_frequency_values)
+        if self.merge_frequency:
+            policy.mergeScheduleFrequencyType = freq_type[self.merge_frequency]
+            policy.mergeScheduleFrequencyValues = self._populateFrequencyValues(
+                host, self.merge_frequency, self.merge_frequency_values)
+        if self.verification_frequency:
+            policy.verificationScheduleFrequencyType = freq_type[self.verification_frequency]
+            policy.verificationScheduleFrequencyValues = self._populateFrequencyValues(
+                host, self.verification_frequency, self.verification_frequency_values)
+
+        if self.backup_database:
+            db_type = create_type('dataBaseType')
+            db_instance = create_type('databaseInstance')
+            db_instance.dataBaseType = db_type[self.database_type]
+            db_instance.name = self.database_name
+            db_instance.username = self.database_username
+            db_instance.password = self.database_password
+            if self.database_hostname:
+                db_instance.hostName = self.database_hostname
+                db_instance.useAlternateHostname = True
+            else:
+                db_instance.useAlternateHostname = False
+            db_instance.portNumber = self.database_port
+            if self.database_data_dir:
+                db_instance.dataDirectory = self.database_data_dir
+                db_instance.useAlternateDataDirectory = True
+            else:
+                db_instance.useAlternateDataDirectory = False
+            if self.database_install_dir:
+                db_instance.installDirectory = self.database_install_dir
+                db_instance.useAlternateInstallDirectory = True
+            else:
+                db_instance.useAlternateInstallDirectory = False
+
+            policy.databaseInstanceList = [db_instance]
+
+        return policy
+
+    def _populateFrequencyValues(self, host, freq, value_string):
+        freq_values = host.conn.Policy2.factory.create('frequencyValues')
+        if freq != 'ON_DEMAND':
+            (start_min, start_hour, interval) = value_string.split(':')
+            freq_values.startingMinute = int(start_min)
+            freq_values.startingHour = int(start_hour)
+            if freq == 'MINUTELY':
+                freq_values.minutelyValue = int(interval)
+            elif freq == 'HOURLY':
+                freq_values.minutelyValue = int(interval)
+            elif freq == 'DAILY':
+                freq_values.hoursOfDay = [int(i) for i in interval.split(',')]
+            elif freq == 'WEEKLY':
+                freq_values.daysOfWeek = [i.upper() for i in interval.split(',')]
+            elif freq == 'MONTHLY':
+                # TODO: there is probably a special value for the last day of
+                # the month, need to figure out what it is at some point
+                freq_values.daysOfMonth = [int(i) for i in interval.split(',')]
+            elif freq == 'YEARLY':
+                interval_values = [i.upper() for i in interval.split(',')]
+                freq_values.dayOfMonth = int(interval_values[0])
+                freq_values.monthsOfYear = interval_values[1:]
+
+        return freq_values
