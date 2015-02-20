@@ -1,13 +1,15 @@
 {% for entry in entries %}
 <tr id="{{ entry.fileName }}" data-url="{{ url_for_entry(entry) }}" data-object-type="{{ 'dir' if entry.isDirectory else 'file' }}">
     <td>
-        <input type="checkbox" class="rac-select-for-restore" value="">
+        <input name="file_names" type="checkbox" class="rac-select-for-restore" value="{{ entry.filePath }}">
     </td>
     <td>
         {% if entry.isDirectory %}
-        <i class="fa fa-folder text-warning fa-lg"></i>
+        <i title="Directory" class="fa fa-folder text-warning fa-lg"></i>
+        <span style="display:none">Directory</span>
         {% else %}
-        <i class="fa fa-file fa-lg"></i>
+        <i title="File" class="fa fa-file fa-lg"></i>
+        <span style="display:none">File</span>
         {% endif %}
     </td>
     <td class="rac-filename">{{ entry.filePath }}</td>

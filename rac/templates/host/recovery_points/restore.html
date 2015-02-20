@@ -1,0 +1,79 @@
+{% extends 'host/recovery_points.html' %}
+{% block title %}{{ recovery_point.recoveryPointID }} - {{ super() }}{% endblock %}
+{% block host_sub_header %}{{ name }}{% endblock %}
+{% block host_content %}
+<div class="row">
+    <div class="col-md-12">
+        <form id="restore-action-form" action="{{ url_for('host_agent_recovery_points_restore_action', host_id=host.id, ds_uuid=disksafe_id, rp_id=recovery_point.recoveryPointID) }}"
+                method="post">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td>{{ restore_form.base_path.label }}</td>
+                        <td>
+                            <code>{{ request.form['base_path'] }}</code>
+                            <input type="hidden" name="base_path" value="{{ request.form['base_path'] }}">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ restore_form.file_names.label }}</td>
+                        <td>
+                            <ul class="list-unstyled">
+                                {% for fn in request.form.getlist('file_names') %}
+                                <li><samp>{{ fn }}</samp></li>
+                                <input type="hidden" name="file_names" value="{{ fn }}">
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ restore_form.restore_target.label }}</td>
+                        <td>{{ restore_form.restore_target(class='list-unstyled') }}</td>
+                    </tr>
+                    <tr class="restore-form-alt-option">
+                        <td>{{ restore_form.alt_restore_host.label }}</td>
+                        <td>{{ restore_form.alt_restore_host(class='form-control') }}</td>
+                    </tr>
+                    <tr class="restore-form-alt-option">
+                        <td>{{ restore_form.alt_restore_port.label }}</td>
+                        <td>{{ restore_form.alt_restore_port(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ restore_form.alt_restore_location.label }}</td>
+                        <td>{{ restore_form.alt_restore_location(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ restore_form.overwrite_existing.label }}</td>
+                        <td>{{ restore_form.overwrite_existing(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ restore_form.use_compression.label }}</td>
+                        <td>{{ restore_form.use_compression(class='form-control') }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ restore_form.estimate_size.label }}</td>
+                        <td>{{ restore_form.estimate_size(class='form-control') }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="submit" class="btn btn-danger" value="RESTORE">
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block customjs %}
+<script>
+    $(function() {
+        $("input:radio[name=restore_target]").change(function() {
+            if($(this).attr("value") == "original_host" && $(this).is(":checked")) {
+                $(".restore-form-alt-option").hide()
+                $(".restore-form-alt-option>td>input").val("");
+            }
+            if($(this).attr("value") == "alt_host" && $(this).is(":checked")) {
+                $(".restore-form-alt-option").show();
+            }
+        });
+        $(".restore-form-alt-option").hide();
+    });
+</script>
+{% endblock %}

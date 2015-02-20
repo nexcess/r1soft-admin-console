@@ -20,18 +20,20 @@
 from rac import app
 from rac.models import R1softHost, UUIDLink
 from rac.util import green_map, policy2agent, inflate_tasks, inflate_task_alerts, \
-    sort_tasks, inflate_task_logs, search_uuid_map, soap2native
-from rac.forms import HostConfigurationForm
+    sort_tasks, inflate_task_logs, search_uuid_map, soap2native, split_by
+from rac.forms import HostConfigurationForm, RestoreForm
 
 from flask import render_template, request, jsonify, url_for, redirect
 import datetime
 from os.path import join as path_join
+import itertools
 
 
 @app.route('/')
 @app.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('dashboard.html',
+        links=UUIDLink.query.all())
 
 @app.route('/host/<int:host_id>/')
 def host_details(host_id):
@@ -127,7 +129,16 @@ def host_agent_recovery_points_browse_data(host_id, ds_uuid, rp_id, path_b64):
         app.logger.exception(err)
         file_entries = []
     else:
-        file_entries = rp_svc.getMultipleFileEntryInformation(rp, path, dir_entries)
+        API_LIST_LENGTH_LIMIT = 500 # Hard-coded files-per-call limit in API
+        if len(dir_entries) > API_LIST_LENGTH_LIMIT:
+            app.logger.debug('Path contains too many files for a single API request: [%d] %s',
+                len(dir_entries), path)
+            file_entries = itertools.chain(
+                *green_map(
+                    lambda de: rp_svc.getMultipleFileEntryInformation(rp, path, de),
+                    split_by(dir_entries, API_LIST_LENGTH_LIMIT)))
+        else:
+            file_entries = rp_svc.getMultipleFileEntryInformation(rp, path, dir_entries)
     return render_template('host/recovery_points/entries.html',
         url_for_entry=lambda e: url_for('host_agent_recovery_points_browse_data',
             host_id=host.id, ds_uuid=ds_uuid, rp_id=rp_id, path_b64=path_join(path, e.filePath).encode('base64').rstrip()),
@@ -135,11 +146,43 @@ def host_agent_recovery_points_browse_data(host_id, ds_uuid, rp_id, path_b64):
 
 @app.route('/host/<int:host_id>/restore/disk-safe/<ds_uuid>/point/<int:rp_id>', methods=['POST'])
 def host_agent_recovery_points_restore(host_id, ds_uuid, rp_id):
-    raise NotImplementedError
     host = R1softHost.query.get(host_id)
     rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
-    restore_options = host.conn.RecoveryPoints2.factory.create('fileRestoreOptions')
-    task = host.conn.RecoveryPoints2.service.doFileRestore(rp, restore_options)
+    name = UUIDLink.query.filter_by(disksafe_uuid=ds_uuid).first().disksafe_desc
+    file_names = request.form.getlist('file_names')
+    form = RestoreForm(file_names=file_names)
+    form.file_names.choices=[(f, f) for f in file_names]
+    return render_template('host/recovery_points/restore.html',
+        host=host,
+        disksafe_id=ds_uuid,
+        name=name,
+        recovery_point=rp,
+        restore_form=form)
+
+@app.route('/host/<int:host_id>/submit-restore/disk-safe/<ds_uuid>/point/<int:rp_id>', methods=['POST'])
+def host_agent_recovery_points_restore_action(host_id, ds_uuid, rp_id):
+    host = R1softHost.query.get(host_id)
+    rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
+    restore_opts = host.conn.RecoveryPoints2.factory.create('fileRestoreOptions')
+    restore_form = RestoreForm()
+    restore_opts.basePath = restore_form.base_path.data
+    restore_opts.fileNames = restore_form.file_names.data
+    restore_opts.useCompression = restore_form.use_compression.data
+    restore_opts.overwriteExistingFiles = restore_form.overwrite_existing.data
+    restore_opts.estimateRestoreSize = restore_form.estimate_size.data
+    if restore_form.restore_target.data == 'alt_host':
+        restore_opts.useOriginalHost = False
+        restore_opts.alternateHostname = restore_form.alt_restore_host.data
+        restore_opts.alternateHostPort = restore_form.alt_restore_port.data
+    else:
+        restore_opts.useOriginalHost = True
+    if restore_form.alt_restore_location.data:
+        restore_opts.restoreToAlternateLocation = True
+        restore_opts.alternateLocationPath = restore_form.alt_restore_location.data
+    else:
+        restore_opts.restoreToAlternateLocation = False
+
+    task = host.conn.RecoveryPoints2.service.doFileRestore(rp, restore_opts)
     return redirect(url_for('task_details', host_id=host_id, task_uuid=task.id))
 
 @app.route('/host/<int:host_id>/task-history/')
@@ -150,9 +193,12 @@ def host_task_history(host_id):
             scheduledStart=str(datetime.date.today() - \
                 datetime.timedelta(app.config['R1SOFT_TASK_HISTORY_DAYS']))),
         with_alert_ids=True)
+    agent_names = [UUIDLink.query.filter_by(agent_uuid=task.agentId).first().agent_hostname \
+            if hasattr(task, 'agentId') else 'SYSTEM' \
+        for task in tasks]
     return render_template('host/task_history.html',
         host=host,
-        tasks=tasks)
+        tasks=zip(tasks, agent_names))
 
 @app.route('/host/<int:host_id>/users/')
 def host_users(host_id):
@@ -197,8 +243,18 @@ def host_api_proxy(host_id, namespace, method):
     host = R1softHost.query.get(host_id)
     soap_method = getattr(getattr(host.conn, namespace).service, method)
     params = request.get_json()
-    func = lambda: soap_method(**params)
-    return jsonify({'response': soap2native(func())})
+    if params is None:
+        pargs = []
+        kwargs = {}
+    else:
+        pargs = params['pargs']
+        kwargs = params['kwargs']
+    response = {'response': None, 'error': None}
+    try:
+        response['response'] = soap2native(soap_method(*pargs, **kwargs))
+    except Exception as err:
+        response['error'] = {'class': err.__class__.__name__, 'message': str(err)}
+    return jsonify(response)
 
 @app.route('/host/<int:host_id>/agents/<agent_uuid>/')
 def agent_details(host_id, agent_uuid):
@@ -233,9 +289,20 @@ def policy_details(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     policy = host.conn.Policy2.service.getPolicyById(policy_uuid)
     links = search_uuid_map(policy.name, policy.description)
+    if policy.state in ('ERROR', 'ALERT'):
+        agent_uuid = [l for l in links if l.policy_uuid == policy_uuid][0].agent_uuid
+        task_ids = host.conn.TaskHistory.service.getTaskExecutionContextIDs(
+            scheduledStart=str(policy.lastReplicationRunTime.date()),
+            hasAlerts=True, taskStates=['FINISHED', 'ERROR'],
+            taskTypes=['DATA_PROTECTION_POLICY'],
+            agents=[agent_uuid])
+        task_link = url_for('task_details', host_id=host_id, task_uuid=task_ids[-1])
+    else:
+        task_link = False
     return render_template('host/details/policy.html',
         host=host,
         links=links,
+        task_link=task_link,
         policy=policy)
 
 @app.route('/host/<int:host_id>/task-history/<task_uuid>/')
@@ -243,8 +310,13 @@ def task_details(host_id, task_uuid):
     host = R1softHost.query.get(host_id)
     task = inflate_task_logs(host, inflate_task_alerts(host,
         host.conn.TaskHistory.service.getTaskExecutionContextByID(task_uuid)))
+    if hasattr(task, 'agentId'):
+        link = UUIDLink.query.filter_by(agent_uuid=task.agentId).first()
+    else:
+        link = False
     return render_template('host/details/task.html',
         host=host,
+        link=link,
         task=task)
 
 @app.route('/policy-directory/')

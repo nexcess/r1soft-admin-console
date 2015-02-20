@@ -7,12 +7,12 @@
         <ul class="list-inline">
             {% for link in obj_attr_filter(links, 'disksafe_uuid', disksafe.id) %}
             <li>
-                <a href="{{ url_for('agent_details', host_id=host.id, agent_uuid=link.agent_uuid) }}" class="btn btn-success">
-                    <i class="fa fa-key fa-lg">&nbsp;</i>
+                <a href="{{ link.agent_url }}" class="btn btn-success">
+                    <i class="fa fa-desktop fa-lg icon-space-right"></i>
                     Agent
                 </a>
-                <a href="{{ url_for('policy_details', host_id=host.id, policy_uuid=link.policy_uuid) }}" class="btn btn-success">
-                    <i class="fa fa-clipboard fa-lg">&nbsp;</i>
+                <a href="{{ link.policy_url }}" class="btn btn-success">
+                    <i class="fa fa-clipboard fa-lg icon-space-right"></i>
                     Policy
                 </a>
             </li>
@@ -25,9 +25,7 @@
         <dl class="dl-horizontal">
             {% for k in disksafe.__keylist__ %}
             <dt>{{ k }}</dt>
-            {% if k == 'deviceList' %}
-            <dd><em>(not shown)</em></dd>
-            {% elif k == 'diskSafeAttributeMap' %}
+            {% if k in ('deviceList', 'diskSafeAttributeMap') %}
             <dd><em>(not shown)</em></dd>
             {% else %}
             <dd>{{ disksafe[k] }}</dd>

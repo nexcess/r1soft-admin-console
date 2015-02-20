@@ -22,7 +22,7 @@ from rac.models import R1softHost, UUIDLink, or_, and_
 
 import gevent.pool
 from suds.sudsobject import asdict
-from flask import Markup
+from flask import Markup, render_template
 from humanize import naturalsize, naturaltime
 import datetime
 
@@ -62,7 +62,7 @@ ICONIZE_MAP = {
     'MERGE_RECOVERY_POINTS':    'fa fa-cubes text-primary',
     'EMAIL_REPORT':     'fa fa-envelope-o text-primary',
     'SYSTEM':           'fa fa-cogs',
-    'TASK_HISTORY_CLEANUP':     'fa fa-expand text-success',
+    'TASK_HISTORY_CLEANUP':     'fa fa-paint-brush',
 
     # Log Level
     'INFO':             'fa fa-flag text-info',
@@ -97,6 +97,9 @@ ICONIZE_MAP = {
 
 API_POOL = gevent.pool.Pool(size=app.config['R1SOFT_API_CONCURRENCY'])
 
+
+def debug_tpl(**kwargs):
+    return render_template('debug.html', debug_data=kwargs)
 
 def soap2native(soap_obj):
     if hasattr(soap_obj, '__keylist__'):
@@ -165,6 +168,9 @@ def search_uuid_map(*search_terms):
 def green_map(func, iterable):
     return API_POOL.map(func, iterable)
 
+def split_by(iterable, chunk_size):
+    return (iterable[pos:pos+chunk_size] for pos in xrange(0, len(iterable), chunk_size))
+
 @app.context_processor
 def inject_data():
     return {
@@ -179,10 +185,12 @@ def inject_obj_attr_filter():
         lambda obj_list, attr, value: [o for o in obj_list if getattr(o, attr) == value]}
 
 @app.template_filter('iconize')
-def iconize_filter(s):
+def iconize_filter(s, space_left=False, space_right=False):
     icon_opts = ICONIZE_MAP.get(s, ICONIZE_MAP.get('UNKNOWN'))
-    return Markup('<i title="{title}" class="{icon_opts} fa-lg"><span style="display:none">{title}</span></i>'.format(
+    return Markup('<i title="{title}" class="{icon_opts} fa-lg {space_right} {space_left}"><span style="display:none">{title}</span></i>'.format(
         title=Markup(str(s).replace('_', ' ').title()),
+        space_right='icon-space-right' if space_right else '',
+        space_left='icon-space-left' if space_left else '',
         icon_opts=icon_opts))
 
 @app.template_filter('naturalsize')

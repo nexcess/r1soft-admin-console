@@ -36,6 +36,11 @@ div.alert {
     margin-bottom: 2px;
 }
 
+.col-centered {
+  float: none;
+  margin: 0 auto;
+}
+
 /*
  * Global add-ons
  */
@@ -71,7 +76,7 @@ div.alert {
 @media (min-width: 768px) {
   .sidebar {
     position: fixed;
-    top: 51px;
+    top: 3em;
     bottom: 0;
     left: 0;
     z-index: 1000;
@@ -120,4 +125,12 @@ div.alert {
 
 .button-row {
   margin-bottom: 10px;
+}
+
+i.icon-space-right {
+  margin-right: .3em;
+}
+
+i.icon-space-left {
+  margin-left: .3em;
 }

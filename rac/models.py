@@ -61,14 +61,18 @@ class R1softHost(db.Model):
 
     @property
     def link(self):
-        html = '<a href="{internal_link}">{hostname}</a>&nbsp;' + \
-            '<a href="{external_link}"><i class="fa fa-external-link"></i></a>'
-        return Markup(html.format(internal_link=url_for('host_details', host_id=self.id),
+        html = '<a href="{internal_link}">{hostname}</a>' + \
+            '<a href="{external_link}"><i class="fa fa-external-link icon-space-left"></i></a>'
+        return Markup(html.format(internal_link=self.internal_url,
             hostname=self.hostname,
-            external_link=self.external_link))
+            external_link=self.external_url))
 
     @property
-    def external_link(self):
+    def internal_url(self):
+        return url_for('host_details', host_id=self.id)
+
+    @property
+    def external_url(self):
         return Markup('{scheme}://{hostname}:{web_port}/'.format(
             scheme='https' if self.web_ssl else 'http',
             hostname=self.hostname,
@@ -116,9 +120,21 @@ class UUIDLink(db.Model):
         return self.host.conn.Agent.service.getAgentByID(self.agent_uuid)
 
     @property
+    def agent_url(self):
+        return url_for('agent_details', host_id=self.host.id, agent_uuid=self.agent_uuid)
+
+    @property
     def disksafe(self):
         return self.host.conn.DiskSafe.service.getDiskSafeByID(self.disksafe_uuid)
 
     @property
+    def disksafe_url(self):
+        return url_for('disksafe_details', host_id=self.host.id, disksafe_uuid=self.disksafe_uuid)
+
+    @property
     def policy(self):
         return self.host.conn.Policy2.service.getPolicyById(self.policy_uuid)
+
+    @property
+    def policy_url(self):
+        return url_for('policy_details', host_id=self.host.id, policy_uuid=self.policy_uuid)

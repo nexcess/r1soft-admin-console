@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}DEBUG{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        {% for k, v in debug_data.iteritems() %}
+        <h2>{{ k }}</h2>
+        <pre>{{ v }}</pre>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

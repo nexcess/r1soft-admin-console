@@ -23,6 +23,12 @@ from wtforms_alchemy import ModelForm
 from flask.ext.wtf import Form
 from wtforms import IntegerField, BooleanField, StringField, RadioField, SelectMultipleField
 from wtforms.validators import NumberRange, InputRequired
+import wtforms.widgets
+
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = wtforms.widgets.ListWidget(prefix_label=False)
+    option_widget = wtforms.widgets.CheckboxInput()
 
 class R1softHostForm(ModelForm):
     class Meta:
@@ -52,9 +58,10 @@ class HostConfigurationForm(Form):
 
 class RestoreForm(Form):
     base_path               = StringField('Base Path')
-    file_names              = SelectMultipleField('Files to Restore')
+    file_names              = SelectMultipleField('Files to Restore',
+                                choices=[])
     restore_target          = RadioField('Restore Target',
-                                [InputRequired()],
+                                default='original_host',
                                 choices=[
                                     ('original_host', 'Original Host'),
                                     ('alt_host', 'Alternate Host')])

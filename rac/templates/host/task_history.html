@@ -22,14 +22,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% for task in tasks %}
+                {% for task, agent_name in tasks %}
                 {% if task.taskType %}
                     <tr id="{{ task.id }}">
                         <td>{{ task.taskState|iconize }}</td>
                         <td>{% if task.alertIDs %}{{ 'ALERT'|iconize }}{% endif %}</td>
                         <td>{{ task.taskType|iconize }}</td>
                         <td><a href="{{ url_for('task_details', host_id=host.id, task_uuid=task.id) }}">{{ task.taskType|replace('_', ' ')|title }}</a></td>
-                        <td>{{ task.agentId }}</td>
+                        <td>{{ agent_name }}</td>
                         <td>{{ task.scheduledTime.replace(microsecond=0) }}</td>
                         {% if task.executionTime %}
                         <td>{{ task.executionTime.replace(microsecond=0) }}</td>
@@ -57,7 +57,7 @@
 <script>
     $(function () {
         $("#nav-filter-input").show().attr({
-            'data-column': "2,3"
+            'data-column': "3,4"
         });
         var table = $("#tasks-list-table").tablesorter({
             sortList: [[5,1]],

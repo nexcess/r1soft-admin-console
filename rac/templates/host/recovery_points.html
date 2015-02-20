@@ -5,7 +5,7 @@
 {% block host_content %}
 <div class="row">
     <div class="col-md-12">
-        <i id="agent-select-spinner" class="fa fa-refresh fa-lg"></i>&nbsp;
+        <i id="agent-select-spinner" class="fa fa-refresh fa-lg icon-space-right"></i>
         <select style="width: 50%;" name="agent-select" id="agent-select" class="form-control pull-right">
             {% for agent in agents %}
             <option value="{{ url_for('host_agent_recovery_points', host_id=host.id, agent_uuid=agent.id) }}">{{ agent.hostname }} ({{ agent.description }})</option>
@@ -38,7 +38,7 @@
             'data-column': "0"
         });
         var table = $("#data-list-table").tablesorter({
-            sortList: [[0,1]],
+            sortList: [[1,1]],
             widgets: ["filter"],
             widgetOptions: {
                 filter_external: $("#nav-filter-input"),

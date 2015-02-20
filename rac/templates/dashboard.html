@@ -7,10 +7,79 @@
             <h1>Dashboard</h1>
             <p><strong>TODO:</strong> show problems here</p>
         </div>
-        <div class="row col-md-12">
-            <div>
-                Also graphs and stuff here
+        <div class="row">
+            <div class="col-md-offset-3 col-md-6 button-row">
+                <input type="text" id="dashboard-quick-search" class="form-control" placeholder="Search...">
+            </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table id="data-list-table" class="table table-condensed table-striped">
+                    <thead>
+                        <th>
+                            <i class="fa fa-server icon-space-right"></i>
+                            Host
+                        </th>
+                        <th>
+                            <i class="fa fa-desktop icon-space-right"></i>
+                            Agent
+                        </th>
+                        <th>
+                            <i class="fa fa-key icon-space-right"></i>
+                            Disk Safe
+                        </th>
+                        <th>
+                            <i class="fa fa-clipboard icon-space-right"></i>
+                            Policy
+                        </th>
+                    </thead>
+                    <tbody>
+                        {% for link in links %}
+                        <tr>
+                            <td>{{ link.host.link }}</td>
+                            <td><a href="{{ link.agent_url }}">{{ link.agent_hostname }}</a></td>
+                            <td><a href="{{ link.disksafe_url }}">{{ link.disksafe_desc }}</a></td>
+                            <td><a href="{{ link.policy_url }}">{{ link.policy_name }}</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                {% include 'snippets/pager.html' %}
             </div>
         </div>
     </div>
+{% endblock %}
+{% block customjs %}
+<script src="{{ url_for('static', filename='jquery.tablesorter.pager.js') }}"></script>
+<script>
+    $(function () {
+        $("#dashboard-quick-search").attr({
+            'data-column': "1,2,3"
+        });
+        var table = $("#data-list-table").tablesorter({
+            sortList: [[3,0]],
+            widgets: ["filter"],
+            widgetOptions: {
+                filter_external: $("#dashboard-quick-search"),
+                filter_columnFilters: false,
+            }
+        }).tablesorterPager({
+            container: $(".table-pager"),
+            updateArrows: true,
+            page: 0,
+            size: 10,
+            cssNext: '.table-pager-next',
+            cssPrev: '.table-pager-prev',
+            cssFirst: '.table-pager-first',
+            cssLast: '.table-pager-last',
+            cssGoto: '.table-pager-page-select',
+            cssPageDisplay: '.table-pager-page-display',
+            cssPageSize: '.table-pager-page-size',
+            cssDisabled: 'disabled',
+        });
+    });
+</script>
 {% endblock %}

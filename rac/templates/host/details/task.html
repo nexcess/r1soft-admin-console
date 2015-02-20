@@ -1,10 +1,36 @@
 {% extends 'host/task_history.html' %}
 {% set task_name = task.taskType|replace('_', ' ')|title %}
 {% block title %}Task: {{ task_name }} - {{ super() }}{% endblock %}
+{% block head %}
+{{ super() }}
+{% if task.taskState == 'RUNNING' %}
+<meta http-equiv="refresh" content="{{ config['RUNNING_TASK_REFRESH_INTERVAL'] }}">
+{% endif %}
+{% endblock head %}
 {% block host_sub_header %}{{ task_name }}{% endblock %}
 {% block host_content %}
 <div class="row">
-    <div class="row">
+    <div class="col-md-12">
+        <ul class="list-inline">
+            {% if link %}
+            <li>
+                <a href="{{ link.agent_url }}" class="btn btn-success">
+                    <i class="fa fa-desktop fa-lg icon-space-right"></i>
+                    Agent
+                </a>
+                <a href="{{ link.disksafe_url }}" class="btn btn-success">
+                    <i class="fa fa-key fa-lg icon-space-right"></i>
+                    Disksafe
+                </a>
+                <a href="{{ link.policy_url }}" class="btn btn-success">
+                    <i class="fa fa-clipboard fa-lg icon-space-right"></i>
+                    Policy
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="row col-md-12">
         <dl class="dl-horizontal">
             {% for k in task.__keylist__ %}
             {% if k not in ('alerts', 'alertIDs', 'logMessageIDs', 'logMessages') %}
@@ -17,7 +43,7 @@
     {% if task.alerts %}
     <h2>Alerts</h2>
     <div class="row col-md-12">
-        <table class="table">
+        <table class="table table-condensed">
             <thead>
                 <tr>
                     <th>Time</th>
@@ -38,7 +64,7 @@
     {% if task.logMessages %}
     <h2>Logs</h2>
     <div class="row col-md-12">
-        <table class="table">
+        <table class="table table-condensed">
             <thead>
                 <tr>
                     <th>Time</th>
