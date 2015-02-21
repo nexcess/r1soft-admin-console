@@ -140,15 +140,25 @@ class UUIDLink(db.Model):
         return url_for('policy_details', host_id=self.host.id, policy_uuid=self.policy_uuid)
 
 class PolicyTemplate(db.Model):
+    R1SOFT_FREQUENCY_TYPES = [
+        'ON_DEMAND',
+        'MINUTELY',
+        'HOURLY',
+        'DAILY',
+        'WEEKLY',
+        'MONTHLY',
+        'YEARLY',
+    ]
+
     id                              = db.Column(db.Integer(), primary_key=True)
 
-    merge_frequency                 = db.Column(db.String(255), nullable=False)
-    merge_frequency_values          = db.Column(db.String(255))
-
-    replication_frequency           = db.Column(db.String(255))
+    replication_frequency           = db.Column(db.Enum(*R1SOFT_FREQUENCY_TYPES), nullable=False)
     replication_frequency_values    = db.Column(db.String(255))
 
-    verification_frequency          = db.Column(db.String(255))
+    merge_frequency                 = db.Column(db.Enum(*R1SOFT_FREQUENCY_TYPES), nullable=False)
+    merge_frequency_values          = db.Column(db.String(255))
+
+    verification_frequency          = db.Column(db.Enum(*R1SOFT_FREQUENCY_TYPES), nullable=False)
     verification_frequncy_values    = db.Column(db.String(255))
 
     enabled                         = db.Column(db.Boolean(), nullable=False)
@@ -164,6 +174,10 @@ class PolicyTemplate(db.Model):
     database_username               = db.Column(db.String(255))
     database_data_dir               = db.Column(db.String(4096))
     database_install_dir            = db.Column(db.String(4096))
+
+    def __init__(self, **kwargs):
+        for k, v in kwargs.iteritems():
+            setattr(self, k, v)
 
     def populate_new_policy_object(self, host):
         create_type = host.conn.Policy2.factory.create

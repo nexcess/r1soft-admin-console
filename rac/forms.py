@@ -17,7 +17,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from rac.models import R1softHost
+from rac.models import R1softHost, PolicyTemplate
 
 from wtforms_alchemy import ModelForm
 from flask.ext.wtf import Form
@@ -33,6 +33,10 @@ class MultiCheckboxField(SelectMultipleField):
 class R1softHostForm(ModelForm):
     class Meta:
         model = R1softHost
+
+class PolicyTemplateForm(ModelForm):
+    class Meta:
+        model = PolicyTemplate
 
 class HostConfigurationForm(Form):
     hard_quota              = IntegerField('Manager Disk Space (Hard Quota)',
