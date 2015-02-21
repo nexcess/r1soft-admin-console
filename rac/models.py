@@ -179,7 +179,14 @@ class PolicyTemplate(db.Model):
         for k, v in kwargs.iteritems():
             setattr(self, k, v)
 
-    def populate_new_policy_object(self, host):
+    def populate_new_policy_object(self, host, disksafe_uuid):
+        """Create and populate a `policy` object with the value saved to this
+        template in the database
+
+        Note that the `name` and `description` fields will still need to be
+        populated in the returned object
+        """
+
         create_type = host.conn.Policy2.factory.create
         policy = create_type('policy')
         freq_type = create_type('frequencyType')
@@ -230,11 +237,30 @@ class PolicyTemplate(db.Model):
         return policy
 
     def _populateFrequencyValues(self, host, freq, value_string):
+        """Populate a `frequencyValues` object based on the database-stored
+        values
+
+        value_string should be in a semi-colon (:) delimited format with 3 fields
+
+        startingMinute:startingHour:comma,delimited,list
+
+        Not all fields are used in all frequency types, but some examples:
+
+            Daily at 0630 and 1430              -> 30::6,14
+            Tues and Thurs (weekly) at 1945     -> 45:19:TUESDAY,THURSDAY
+            1st and 15th (monthly) at 0700      -> 0:7:1,15
+            Jan 1st at 0001 (yearly)            -> 1:0:1,JANUARY
+
+        Note that YEARLY is special in that the 1st value of the third field
+        indicates what day of every indicated month to run on
+        """
+
         freq_values = host.conn.Policy2.factory.create('frequencyValues')
         if freq != 'ON_DEMAND':
             (start_min, start_hour, interval) = value_string.split(':')
-            freq_values.startingMinute = int(start_min)
-            freq_values.startingHour = int(start_hour)
+            freq_values.startingMinute = int(start_min) if start_min else 0
+            freq_values.startingHour = int(start_hour) if start_hour else 0
+
             if freq == 'MINUTELY':
                 freq_values.minutelyValue = int(interval)
             elif freq == 'HOURLY':
@@ -245,7 +271,8 @@ class PolicyTemplate(db.Model):
                 freq_values.daysOfWeek = [i.upper() for i in interval.split(',')]
             elif freq == 'MONTHLY':
                 # TODO: there is probably a special value for the last day of
-                # the month, need to figure out what it is at some point
+                # the month, need to figure out what it is at some point. also
+                # applies to dayOfMonth for YEARLY
                 freq_values.daysOfMonth = [int(i) for i in interval.split(',')]
             elif freq == 'YEARLY':
                 interval_values = [i.upper() for i in interval.split(',')]
