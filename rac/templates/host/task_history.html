@@ -47,10 +47,10 @@
                         {% endif %}
                         <td>
                             {% if task.taskState in ('RUNNING', 'QUEUED') %}
-                            {{ mk_form_button(url_for(''),
+                            {{ mk_form_button(url_for('host_task_history_cancel', host_id=host.id, task_uuid=task.id),
                                     'Cancel', 'times', 'danger') }}
                             {% else %}
-                            {{ mk_form_button('#',
+                            {{ mk_form_button(url_for('host_task_history_rerun', host_id=host.id, task_uuid=task.id),
                                     'Rerun', 'repeat', 'primary') }}
                             {% endif %}
                         </td>
