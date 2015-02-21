@@ -20,6 +20,7 @@
 
 from rac import app, db, manager
 from rac.models import R1softHost, UUIDLink
+from rac.util import green_map
 
 from sqlalchemy.exc import IntegrityError
 from r1soft.util import read_config
@@ -39,7 +40,9 @@ def populate_uuid_map(host=''):
         try:
             agents = host.conn.Agent.service.getAgents()
             app.logger.debug('Pulled %d agent objects from API', len(agents))
-            disksafes = [ds for ds in host.conn.DiskSafe.service.getDiskSafes() \
+            disksafes = [ds for ds in green_map(
+                    host.conn.DiskSafe.service.getDiskSafeByID,
+                    host.conn.DiskSafe.service.getDiskSafeIDs()) \
                 if hasattr(ds, 'agentID')]
             app.logger.debug('Pulled %d disk safe objects from API', len(disksafes))
             policies = [p for p in host.conn.Policy2.service.getPolicies() \
@@ -58,7 +61,8 @@ def populate_uuid_map(host=''):
                 host.active = True
                 db.session.add(host)
                 db.session.commit()
-
+        app.logger.info('Deleting old mappings')
+        UUIDLink.query.filter_by(host_id=host.id).delete()
         app.logger.info('Preparing to create mappings')
         for agent in agents:
             agent_disksafes = [ds for ds in disksafes if ds.agentID == agent.id]

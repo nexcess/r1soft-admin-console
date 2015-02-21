@@ -85,9 +85,14 @@ def host_agents_delete(host_id, agent_uuid):
 @app.route('/host/<int:host_id>/disksafes/')
 def host_disksafes(host_id):
     host = R1softHost.query.get(host_id)
+    # testing showed this way was about 1 second faster than just
+    # doing getDiskSafes()
+    disksafes = green_map(
+        host.conn.DiskSafe.service.getDiskSafeByID,
+        host.conn.DiskSafe.service.getDiskSafeIDs())
     return render_template('host/disksafes.html',
         host=host,
-        disksafes=host.conn.DiskSafe.service.getDiskSafes())
+        disksafes=disksafes)
 
 @app.route('/disk-safes/host/<int:host_id>/disk-safe/<ds_uuid>/close', methods=['POST'])
 def host_disksafes_close(host_id, ds_uuid):
