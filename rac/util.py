@@ -27,6 +27,7 @@ from humanize import naturalsize, naturaltime, naturaldelta
 import datetime
 from urllib2 import URLError
 from ssl import SSLError
+from suds import WebFault, MethodNotFound
 
 
 ICONIZE_MAP = {
@@ -217,5 +218,7 @@ def convert_ms_to_timedelta(ms):
 
 @app.errorhandler(URLError)
 @app.errorhandler(SSLError)
+@app.errorhandler(WebFault)
+@app.errorhandler(MethodNotFound)
 def handle_timeout(error):
     return render_template('error.html', error=error), 500

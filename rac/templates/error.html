@@ -1,10 +1,16 @@
 {% extends 'base.html' %}
+{% set refresh_interval = 5 %}
 {% block title %}Error{% endblock %}
+{% block head %}
+{{ super() }}
+<meta http-equiv="refresh" content="{{ refresh_interval }}">
+{% endblock head %}
 {% block content %}
     <div class="row">
         <div class="col-md-6 col-md-offset-3">
             <h2>{{ error.__class__.__name__ }}</h2>
             <p>{{ error }}</p>
+            <small>This page will refresh after {{ refresh_interval }} seconds.</small>
         </div>
     </div>
 {% endblock %}
