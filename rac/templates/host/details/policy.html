@@ -24,7 +24,7 @@
     <div class="col-md-offset-6 col-md-6">
         <ul class="list-inline pull-right">
             {% for link in links %}
-            {% if link.policy_uuid != policy.id %}
+            {% if link.policy_uuid and link.policy_uuid != policy.id %}
             <li>
                 {{ mk_link_button(link.policy_url,
                         link.host.hostname, 'at', 'primary', size='') }}

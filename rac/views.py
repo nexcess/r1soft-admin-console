@@ -43,6 +43,7 @@ def host_details(host_id):
             host.conn.StorageDisk.service.getStorageDiskPaths()),
         key=lambda i: i.capacityBytes,
         reverse=True)[:3]
+    orphan_links = UUIDLink.query.filter_by(host_id=host.id, policy_uuid=None).all()
     host_stats = {
         'info': cfg_svc.getServerInformation(),
         'license': cfg_svc.getServerLicenseInformation(),
@@ -54,6 +55,7 @@ def host_details(host_id):
         policies=host.conn.Policy2.service.getPolicies(),
         volumes=host.conn.Volume.service.getVolumes(),
         disks=disks,
+        orphan_links=orphan_links,
         agent_count=len(host.conn.Agent.service.getAgentIDs()))
 
 @app.route('/hosts/<int:host_id>/volumes/')
@@ -72,9 +74,11 @@ def host_volumes_delete(host_id, volume_uuid):
 @app.route('/hosts/<int:host_id>/agents/')
 def host_agents(host_id):
     host = R1softHost.query.get(host_id)
+    agents = host.conn.Agent.service.getAgents()
+    links = [UUIDLink.query.filter_by(host_id=host.id, agent_uuid=a.id).all() for a in agents]
     return render_template('host/agents.html',
         host=host,
-        agents=host.conn.Agent.service.getAgents())
+        agents=zip(agents, links))
 
 @app.route('/hosts/<int:host_id>/agents/<agent_uuid>/delete', methods=['DELETE'])
 def host_agents_delete(host_id, agent_uuid):
@@ -432,12 +436,8 @@ def policy_details(host_id, policy_uuid):
     links = search_uuid_map(policy.name, policy.description)
     if policy.state in ('ERROR', 'ALERT'):
         agent_uuid = [l for l in links if l.policy_uuid == policy_uuid][0].agent_uuid
-        task_ids = host.conn.TaskHistory.service.getTaskExecutionContextIDs(
-            scheduledStart=str(policy.lastReplicationRunTime.date()),
-            hasAlerts=True, taskStates=['FINISHED', 'ERROR'],
-            taskTypes=['DATA_PROTECTION_POLICY'],
-            agents=[agent_uuid])
-        task_link = url_for('task_details', host_id=host_id, task_uuid=task_ids[-1])
+        task = host.conn.Agent.service.getLastFinishedBackupTaskInfo(agent_uuid)
+        task_link = url_for('task_details', host_id=host_id, task_uuid=task.id)
     else:
         task_link = False
     return render_template('host/details/policy.html',
@@ -452,6 +452,7 @@ def task_details(host_id, task_uuid):
     task = inflate_task_logs(host, inflate_task_alerts(host,
         host.conn.TaskHistory.service.getTaskExecutionContextByID(task_uuid)))
     if hasattr(task, 'agentId'):
+        # TODO: this is shitty and needs to be refined
         link = UUIDLink.query.filter_by(agent_uuid=task.agentId).first()
         if task.taskType == 'FILE_RESTORE':
             task.fileRestoreStatistics = host.conn.TaskHistory.service.getFileRestoreStatistics(task.id)

@@ -28,6 +28,26 @@ from urllib2 import URLError
 from ssl import SSLError
 
 
+def create_link(host, agent, disksafe=None, policy=None):
+    if disksafe is None:
+        link = UUIDLink(host.id, agent.id, None, None,
+            agent_hostname=agent.hostname, disksafe_desc='',
+            policy_name='')
+    elif policy is None:
+        link = UUIDLink(host.id, agent.id, disksafe.id, None,
+            agent_hostname=agent.hostname, disksafe_desc=disksafe.description,
+            policy_name='')
+    else:
+        link = UUIDLink(host.id, agent.id, disksafe.id, policy.id,
+            agent_hostname=agent.hostname, disksafe_desc=disksafe.description,
+            policy_name=policy.name)
+    db.session.add(link)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+    return link
+
 @manager.command
 def populate_uuid_map(host=''):
     app.logger.info('Populating the UUID Map table')
@@ -66,18 +86,17 @@ def populate_uuid_map(host=''):
         app.logger.info('Preparing to create mappings')
         for agent in agents:
             agent_disksafes = [ds for ds in disksafes if ds.agentID == agent.id]
-            for disksafe in agent_disksafes:
-                disksafe_policies = [p for p in policies if p.diskSafeID == disksafe.id]
-                for policy in disksafe_policies:
-                    map_link = UUIDLink(host.id, agent.id, disksafe.id, policy.id,
-                        agent_hostname=agent.hostname, disksafe_desc=disksafe.description,
-                        policy_name=policy.name)
-                    db.session.add(map_link)
-                    try:
-                        db.session.commit()
-                    except IntegrityError:
-                        db.session.rollback()
-                        continue
+            if agent_disksafes:
+                for disksafe in agent_disksafes:
+                    disksafe_policies = [p for p in policies if p.diskSafeID == disksafe.id]
+                    if disksafe_policies:
+                        for policy in disksafe_policies:
+                            create_link(host, agent, disksafe, policy)
+                    else:
+                        create_link(host, agent, disksafe)
+            else:
+                create_link(host, agent)
+
     app.logger.info('Finished populating UUID Map table')
 
 @manager.command

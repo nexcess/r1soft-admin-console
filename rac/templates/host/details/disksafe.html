@@ -9,8 +9,10 @@
             <li>
                 {{ mk_link_button(link.agent_url,
                         'Agent', 'desktop', 'success', size='') }}
+                {% if link.policy_uuid %}
                 {{ mk_link_button(link.policy_url,
                         'Policy', 'clipboard', 'success', size='') }}
+                {% endif %}
             </li>
             {% endfor %}
         </ul>

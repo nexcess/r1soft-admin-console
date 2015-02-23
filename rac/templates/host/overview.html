@@ -14,7 +14,7 @@
                     <div class="row">
                         <div class="col-md-2 text-center">
                             <h2 class="text-primary">{{ agent_count }}</h2>
-                            Servers
+                            Agents
                         </div>
                         <div class="col-md-2 text-center">
                             <h2 class="text-primary">{{ policies|length }}</h2>
@@ -31,6 +31,10 @@
                         <div class="col-md-2 text-center">
                             <h2 class="text-default">{{ obj_attr_filter(policies, 'enabled', False)|length }}</h2>
                             Disabled
+                        </div>
+                        <div class="col-md-2 text-center">
+                            <h2 class="text-warning">{{ orphan_links|length }}</h2>
+                            Orphaned Disk Safes
                         </div>
                     </div>
                 </div>

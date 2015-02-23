@@ -14,18 +14,16 @@
         <ul class="list-inline">
             {% if link %}
             <li>
-                <a href="{{ link.agent_url }}" class="btn btn-success">
-                    <i class="fa fa-desktop fa-lg icon-space-right"></i>
-                    Agent
-                </a>
-                <a href="{{ link.disksafe_url }}" class="btn btn-success">
-                    <i class="fa fa-key fa-lg icon-space-right"></i>
-                    Disksafe
-                </a>
-                <a href="{{ link.policy_url }}" class="btn btn-success">
-                    <i class="fa fa-clipboard fa-lg icon-space-right"></i>
-                    Policy
-                </a>
+                {{ mk_link_button(link.agent_url,
+                        'Agent', 'key', 'success', size='') }}
+                {% if link.disksafe_uuid %}
+                {{ mk_link_button(link.disksafe_url,
+                        'Disk Safe', 'key', 'success', size='') }}
+                {% if link.policy_uuid %}
+                {{ mk_link_button(link.policy_url,
+                        'Policy', 'clipboard', 'success', size='') }}
+                {% endif %}
+                {% endif %}
             </li>
             {% endif %}
         </ul>

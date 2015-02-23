@@ -7,10 +7,14 @@
         <ul class="list-inline">
             {% for link in obj_attr_filter(links, 'agent_uuid', agent.id) %}
             <li>
+                {% if link.disksafe_uuid %}
                 {{ mk_link_button(link.disksafe_url,
                         'Disk Safe', 'key', 'success', size='') }}
+                {% if link.policy_uuid %}
                 {{ mk_link_button(link.policy_url,
                         'Policy', 'clipboard', 'success', size='') }}
+                {% endif %}
+                {% endif %}
             </li>
             {% endfor %}
         </ul>

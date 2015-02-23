@@ -88,11 +88,11 @@ class R1softHost(db.Model):
 class UUIDLink(db.Model):
     id              = db.Column(db.Integer(), primary_key=True)
     host_id         = db.Column(db.Integer(), db.ForeignKey('r1soft_host.id'))
-    agent_uuid      = db.Column(db.String(36), nullable=False)
+    agent_uuid      = db.Column(db.String(36), nullable=False, index=True)
     agent_hostname  = db.Column(db.String(255))
-    disksafe_uuid   = db.Column(db.String(36), nullable=False)
+    disksafe_uuid   = db.Column(db.String(36))
     disksafe_desc   = db.Column(db.String(255))
-    policy_uuid     = db.Column(db.String(36), nullable=False, index=True)
+    policy_uuid     = db.Column(db.String(36))
     policy_name     = db.Column(db.String(255))
 
     __table_args__  = (db.UniqueConstraint('agent_uuid', 'disksafe_uuid', 'policy_uuid', name='uuid_constraint'),)
@@ -125,19 +125,23 @@ class UUIDLink(db.Model):
 
     @property
     def disksafe(self):
-        return self.host.conn.DiskSafe.service.getDiskSafeByID(self.disksafe_uuid)
+        return self.host.conn.DiskSafe.service.getDiskSafeByID(self.disksafe_uuid) \
+            if self.disksafe_uuid else None
 
     @property
     def disksafe_url(self):
-        return url_for('disksafe_details', host_id=self.host.id, disksafe_uuid=self.disksafe_uuid)
+        return url_for('disksafe_details', host_id=self.host.id, disksafe_uuid=self.disksafe_uuid) \
+            if self.disksafe_uuid else '#'
 
     @property
     def policy(self):
-        return self.host.conn.Policy2.service.getPolicyById(self.policy_uuid)
+        return self.host.conn.Policy2.service.getPolicyById(self.policy_uuid) \
+            if self.policy_uuid else None
 
     @property
     def policy_url(self):
-        return url_for('policy_details', host_id=self.host.id, policy_uuid=self.policy_uuid)
+        return url_for('policy_details', host_id=self.host.id, policy_uuid=self.policy_uuid) \
+            if self.policy_uuid else '#'
 
 class PolicyTemplate(db.Model):
     R1SOFT_FREQUENCY_TYPES = [
