@@ -33,7 +33,7 @@
                             Disabled
                         </div>
                         <div class="col-md-2 text-center">
-                            <h2 class="text-warning">{{ orphan_links|length }}</h2>
+                            <h2 class="text-warning">{{ orphan_links|length - (agent_count - policies|length) }}</h2>
                             Orphaned Disk Safes
                         </div>
                     </div>
