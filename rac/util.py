@@ -25,6 +25,8 @@ from suds.sudsobject import asdict
 from flask import Markup, render_template
 from humanize import naturalsize, naturaltime, naturaldelta
 import datetime
+from urllib2 import URLError
+from ssl import SSLError
 
 
 ICONIZE_MAP = {
@@ -212,3 +214,8 @@ def convert_ms_to_datetime(ms):
 @app.template_filter('ms_to_timedelta')
 def convert_ms_to_timedelta(ms):
     return datetime.timedelta(milliseconds=ms)
+
+@app.errorhandler(URLError)
+@app.errorhandler(SSLError)
+def handle_timeout(error):
+    return render_template('error.html', error=error), 500

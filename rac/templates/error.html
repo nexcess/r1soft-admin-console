@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Error{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h2>{{ error.__class__.__name__ }}</h2>
+            <p>{{ error }}</p>
+        </div>
+    </div>
+{% endblock %}
