@@ -5,20 +5,16 @@
 {% block host_content %}
 <div class="row">
     <div class="col-md-12 button-row">
-        <a class="btn btn-success pull-right" href="#">
-            <i class="fa fa-floppy-o fa-lg icon-space-right"></i>
-            Save Configuration
-        </a>
+        <div class="pull-right">
+            {{ mk_form_button('#',
+                    'Save Configuration', 'floppy-o', 'success', size='', submit_method='POST') }}
+        </div>
         {% if host_config['maintenance_mode'] %}
-        <a href="#" class="btn btn-success">
-            <i class="fa fa-check fa-lg icon-space-right"></i>
-            Maintenance Mode: ON
-        </a>
+        {{ mk_form_button('#',
+                'Disable Maintenance Mode', 'check', 'success', size='', submit_method='POST') }}
         {% else %}
-        <a href="#" class="btn btn-danger">
-            <i class="fa fa-times fa-lg icon-space-right"></i>
-            Maintenance Mode: OFF
-        </a>
+        {{ mk_form_button('#',
+                'Enable Maintenance Mode', 'times', 'danger', size='', submit_method='POST') }}
         {% endif %}
     </div>
 </div>

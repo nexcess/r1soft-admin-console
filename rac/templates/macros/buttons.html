@@ -1,19 +1,21 @@
-{% macro mk_link_button(url, name, icon='question-circle', icon_color='default', show_text=True) %}
-<a class="btn btn-default btn-xs" href="{{ url }}">
-    <i title="{{ name|title }}" class="fa fa-{{ icon }} fa-lg text-{{ icon_color }} {% if show_text %}icon-space-right{% endif %}"></i>
+{% macro mk_link_button(url, name, icon='question-circle', color='default', size='xs', show_text=True) %}
+<a class="btn{% if size != '' %} btn-{{ size }}{% endif %}{% if size != 'xs' %} btn-{{ color }}{% else %} btn-default{% endif %}" href="{{ url }}">
+    <i title="{{ name }}"
+            class="fa fa-{{ icon }} fa-lg{% if size == 'xs' %} text-{{ color }}{% endif %}{% if show_text %} icon-space-right{% endif %}"></i>
     {% if show_text %}
-    {{ name|title }}
+    {{ name }}
     {% endif %}
 </a>
 {% endmacro %}
 
-{% macro mk_form_button(url, name, icon='question-circle', icon_color='default', show_text=True, submit_method='POST') %}
+{% macro mk_form_button(url, name, icon='question-circle', color='default', size='xs', show_text=True, submit_method='POST') %}
 <form action="{{ url }}" method="{{ submit_method }}" class="rac-single-button-form"
-        title="{{ name|title }}">
-    <button type="submit" class="btn btn-default btn-xs">
-        <i title="{{ name|title }}" class="fa fa-{{ icon }} fa-lg text-{{ icon_color }} {% if show_text %}icon-space-right{% endif %}"></i>
+        title="{{ name }}">
+    <button type="submit" class="btn{% if size %} btn-{{ size }}{% endif %}{% if size != 'xs' %} btn-{{ color }}{% else %} btn-default{% endif %}">
+        <i title="{{ name }}"
+                class="fa fa-{{ icon }} fa-lg{% if size == 'xs' %} text-{{ color }}{% endif %}{% if show_text %} icon-space-right{% endif %}"></i>
         {% if show_text %}
-        {{ name|title }}
+        {{ name }}
         {% endif %}
     </button>
 </form>

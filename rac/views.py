@@ -246,7 +246,7 @@ def host_agent_recovery_points_browse_data(host_id, ds_uuid, rp_id, path_b64):
             host_id=host.id, ds_uuid=ds_uuid, rp_id=rp_id, path_b64=path_join(path, e.filePath).encode('base64').rstrip()),
         entries=file_entries)
 
-@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/recovery-points/<int:rp_id>/submit-restore', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/recovery-points/<int:rp_id>/confirm-restore', methods=['POST'])
 def host_agent_recovery_points_restore(host_id, ds_uuid, rp_id):
     host = R1softHost.query.get(host_id)
     rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)

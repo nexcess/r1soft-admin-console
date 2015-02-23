@@ -5,10 +5,10 @@
 {% block host_sub_header %}{{ disksafes|length }} Disk Safes{% endblock %}
 {% block host_content %}
 <div class="row">
-    <a class="btn btn-success pull-right" href="#">
-        <i class="fa fa-plus fa-lg icon-space-right"></i>
-        Add New Disk Safe
-    </a>
+    <div class="pull-right">
+        {{ mk_link_button('#',
+                'Add New Disk Safe', 'plus', 'success', size='') }}
+    </div>
     <div class="row">
         <div class="col-md-12">
             <table id="disksafes-list-table" class="table">

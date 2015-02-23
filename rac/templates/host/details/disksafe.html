@@ -7,14 +7,10 @@
         <ul class="list-inline">
             {% for link in obj_attr_filter(links, 'disksafe_uuid', disksafe.id) %}
             <li>
-                <a href="{{ link.agent_url }}" class="btn btn-success">
-                    <i class="fa fa-desktop fa-lg icon-space-right"></i>
-                    Agent
-                </a>
-                <a href="{{ link.policy_url }}" class="btn btn-success">
-                    <i class="fa fa-clipboard fa-lg icon-space-right"></i>
-                    Policy
-                </a>
+                {{ mk_link_button(link.agent_url,
+                        'Agent', 'desktop', 'success', size='') }}
+                {{ mk_link_button(link.policy_url,
+                        'Policy', 'clipboard', 'success', size='') }}
             </li>
             {% endfor %}
         </ul>

@@ -7,22 +7,16 @@
         <ul class="list-inline">
             {% for link in obj_attr_filter(links, 'policy_uuid', policy.id) %}
             <li>
-                <a href="{{ link.agent_url }}" class="btn btn-success">
-                    <i class="fa fa-desktop fa-lg icon-space-right"></i>
-                    Agent
-                </a>
-                <a href="{{ link.disksafe_url }}" class="btn btn-success">
-                    <i class="fa fa-key fa-lg icon-space-right"></i>
-                    Disksafe
-                </a>
+                {{ mk_link_button(link.agent_url,
+                        'Agent', 'key', 'success', size='') }}
+                {{ mk_link_button(link.disksafe_url,
+                        'Disk Safe', 'key', 'success', size='') }}
             </li>
             {% endfor %}
             {% if task_link %}
             <li>
-                <a href="{{ task_link }}" class="btn btn-{% if policy.state == 'ERROR' %}danger{% else %}warning{% endif %}">
-                    <i class="fa fa-search fa-lg icon-space-right"></i>
-                    Most Recent Task Details
-                </a>
+                {{ mk_link_button(task_link,
+                        'Most Recent Task', 'search', 'danger' if policy.state == 'ERROR' else 'warning', size='') }}
             </li>
             {% endif %}
         </ul>
@@ -32,10 +26,8 @@
             {% for link in links %}
             {% if link.policy_uuid != policy.id %}
             <li>
-                <a href="{{ link.policy_url }}" class="btn btn-primary">
-                    <i class="fa fa-link fa-lg icon-space-right"></i>
-                    See on {{ link.host.hostname }}
-                </a>
+                {{ mk_link_button(link.policy_url,
+                        link.host.hostname, 'at', 'primary', size='') }}
             </li>
             {% endif %}
             {% endfor %}

@@ -5,10 +5,10 @@
 {% block host_sub_header %}{{ policies|length }} Policies{% endblock %}
 {% block host_content %}
 <div class="row">
-    <a class="btn btn-success pull-right" href="#">
-        <i class="fa fa-plus fa-lg icon-space-right"></i>
-        Add New Policy
-    </a>
+    <div class="pull-right">
+        {{ mk_link_button('#',
+                'Add New Policy', 'plus', 'success', size='') }}
+    </div>
     <div class="row">
         <div class="col-md-12">
             <table id="policies-list-table" class="table">
