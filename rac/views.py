@@ -35,7 +35,7 @@ def dashboard():
     return render_template('dashboard.html',
         links=UUIDLink.query.all())
 
-@app.route('/host/<int:host_id>/')
+@app.route('/hosts/<int:host_id>/info')
 def host_details(host_id):
     host = R1softHost.query.get(host_id)
     cfg_svc = host.conn.Configuration.service
@@ -56,33 +56,33 @@ def host_details(host_id):
         disks=disks,
         agent_count=len(host.conn.Agent.service.getAgentIDs()))
 
-@app.route('/host/<int:host_id>/volumes/')
+@app.route('/hosts/<int:host_id>/volumes/')
 def host_volumes(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host/volumes.html',
         host=host,
         volumes=host.conn.Volume.service.getVolumes())
 
-@app.route('/volumes/host/<int:host_id>/volume/<volume_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/volumes/<volume_uuid>/delete', methods=['DELETE'])
 def host_volumes_delete(host_id, volume_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.Volume.service.deleteVolumeById(volume_uuid)
     return redirect(url_for('host_volumes', host_id=host_id))
 
-@app.route('/host/<int:host_id>/agents/')
+@app.route('/hosts/<int:host_id>/agents/')
 def host_agents(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host/agents.html',
         host=host,
         agents=host.conn.Agent.service.getAgents())
 
-@app.route('/agents/host/<int:host_id>/agent/<agent_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/agents/<agent_uuid>/delete', methods=['DELETE'])
 def host_agents_delete(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.Agent.service.deleteAgentById(agent_uuid)
     return redirect(url_for('host_agents', host_id=host_id))
 
-@app.route('/host/<int:host_id>/disksafes/')
+@app.route('/hosts/<int:host_id>/disk-safes/')
 def host_disksafes(host_id):
     host = R1softHost.query.get(host_id)
     # testing showed this way was about 1 second faster than just
@@ -94,78 +94,78 @@ def host_disksafes(host_id):
         host=host,
         disksafes=disksafes)
 
-@app.route('/disk-safes/host/<int:host_id>/disk-safe/<ds_uuid>/close', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/close', methods=['POST'])
 def host_disksafes_close(host_id, ds_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.DiskSafe.service.closeDiskSafeById(ds_uuid)
     return redirect(url_for('host_disksafes', host_id=host.id))
 
-@app.route('/disk-safes/host/<int:host_id>/disk-safe/<ds_uuid>/open', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/open', methods=['POST'])
 def host_disksafes_open(host_id, ds_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.DiskSafe.service.openDiskSafeById(ds_uuid)
     return redirect(url_for('host_disksafes', host_id=host.id))
 
-@app.route('/disk-safes/host/<int:host_id>/disk-safe/<ds_uuid>/detach', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/detach', methods=['POST'])
 def host_disksafes_detach(host_id, ds_uuid):
     host = R1softHost.query.get(host_id)
     disksafe = host.conn.DiskSafe.service.getDiskSafeByID(ds_uuid)
     host.conn.DiskSafe.service.detachDiskSafe(disksafe)
     return redirect(url_for('host_disksafes', host_id=host.id))
 
-@app.route('/disk-safes/host/<int:host_id>/disk-safe/<ds_uuid>/attach', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/attach', methods=['POST'])
 def host_disksafes_attach(host_id, ds_uuid):
     host = R1softHost.query.get(host_id)
     disksafe = host.conn.DiskSafe.service.getDiskSafeByID(ds_uuid)
     host.conn.DiskSafe.service.attachDisksafe(disksafe)
     return redirect(url_for('host_disksafes', host_id=host.id))
 
-@app.route('/disk-safes/host/<int:host_id>/disk-safe/<ds_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/delete', methods=['DELETE'])
 def host_disksafes_delete(host_id, ds_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.DiskSafe.service.deleteDiskSafeById(ds_uuid)
     return redirect(url_for('host_disksafes', host_id=host.id))
 
-@app.route('/host/<int:host_id>/policies/')
+@app.route('/hosts/<int:host_id>/policies/')
 def host_policies(host_id):
     host = R1softHost.query.get(host_id)
     return render_template('host/policies.html',
         host=host,
         policies=host.conn.Policy2.service.getPolicies())
 
-@app.route('/policies/host/<int:host_id>/policy_uuid/<policy_uuid>/run', methods=['POST'])
+@app.route('/hosts/<int:host_id>/policies/<policy_uuid>/run', methods=['POST'])
 def host_policies_run(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     task = host.conn.Policy2.service.runPolicyByID(policy_uuid)
     return redirect(url_for('task_details', host_id=host_id, task_uuid=task.id))
 
-@app.route('/policies/host/<int:host_id>/policy_uuid/<policy_uuid>/verify', methods=['POST'])
+@app.route('/hosts/<int:host_id>/policies/<policy_uuid>/verify', methods=['POST'])
 def host_policies_disksafe_verify(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     task = host.conn.Policy2.service.runDiskSafeVerificationByPolicyID(policy_uuid)
     return redirect(url_for('task_details', host_id=host_id, task_uuid=task.id))
 
-@app.route('/policies/host/<int:host_id>/policy_uuid/<policy_uuid>/enable', methods=['POST'])
+@app.route('/hosts/<int:host_id>/policies/<policy_uuid>/enable', methods=['POST'])
 def host_policies_enable(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     policy = host.conn.Policy2.service.getPolicyById(policy_uuid)
     host.conn.Policy2.service.enablePolicy(policy)
     return redirect(url_for('host_policies', host_id=host_id))
 
-@app.route('/policies/host/<int:host_id>/policy_uuid/<policy_uuid>/disable', methods=['POST'])
+@app.route('/hosts/<int:host_id>/policies/<policy_uuid>/disable', methods=['POST'])
 def host_policies_disable(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     policy = host.conn.Policy2.service.getPolicyById(policy_uuid)
     host.conn.Policy2.service.disablePolicy(policy)
     return redirect(url_for('host_policies', host_id=host_id))
 
-@app.route('/policies/host/<int:host_id>/policy_uuid/<policy_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/policies/<policy_uuid>/delete', methods=['DELETE'])
 def host_policies_delete(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.Policy2.service.deletePolicyById(policy_uuid)
     return redirect(url_for('host_policies', host_id=host_id))
 
-@app.route('/host/<int:host_id>/recovery-points/')
+@app.route('/hosts/<int:host_id>/recovery-points/')
 def host_recovery_points(host_id):
     host = R1softHost.query.get(host_id)
     agents = sorted(host.conn.Agent.service.getAgents(), key=lambda a: a.hostname)
@@ -173,7 +173,7 @@ def host_recovery_points(host_id):
         host=host,
         agents=agents)
 
-@app.route('/host/<int:host_id>/recovery-points/agent/<agent_uuid>/')
+@app.route('/hosts/<int:host_id>/agents/<agent_uuid>/recovery-points/')
 def host_agent_recovery_points(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
     agent = host.conn.Agent.service.getAgentByID(agent_uuid)
@@ -187,28 +187,28 @@ def host_agent_recovery_points(host_id, agent_uuid):
         agent=agent,
         collection_data=collection_data)
 
-@app.route('/host/<int:host_id>/recovery-points/disk-safe/<ds_uuid>/point/<int:rp_id>/lock', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/recovery-points/<int:rp_id>/lock', methods=['POST'])
 def host_agent_recovery_points_lock(host_id, ds_uuid, rp_id):
     host = R1softHost.query.get(host_id)
     rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
     host.conn.RecoveryPoints2.service.lockRecoveryPoint(rp)
     return redirect(url_for('host_recovery_points', host_id=host.id))
 
-@app.route('/host/<int:host_id>/recovery-points/disk-safe/<ds_uuid>/point/<int:rp_id>/unlock', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/recovery-points/<int:rp_id>/unlock', methods=['POST'])
 def host_agent_recovery_points_unlock(host_id, ds_uuid, rp_id):
     host = R1softHost.query.get(host_id)
     rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
     host.conn.RecoveryPoints2.service.unlockRecoveryPoint(rp)
     return redirect(url_for('host_recovery_points', host_id=host.id))
 
-@app.route('/host/<int:host_id>/recovery-points/disk-safe/<ds_uuid>/point/<int:rp_id>/merge', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/recovery-points/<int:rp_id>/merge', methods=['POST'])
 def host_agent_recovery_points_merge(host_id, ds_uuid, rp_id):
     host = R1softHost.query.get(host_id)
     rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
     host.conn.RecoveryPoints2.service.mergeRecoveryPoint(rp)
     return redirect(url_for('host_recovery_points', host_id=host.id))
 
-@app.route('/host/<int:host_id>/recovery-points/disk-safe/<ds_uuid>/point/<int:rp_id>/')
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/recovery-points/<int:rp_id>/')
 def host_agent_recovery_points_browse(host_id, ds_uuid, rp_id):
     host = R1softHost.query.get(host_id)
     name = UUIDLink.query.filter_by(disksafe_uuid=ds_uuid).first().disksafe_desc
@@ -219,7 +219,7 @@ def host_agent_recovery_points_browse(host_id, ds_uuid, rp_id):
         disksafe_id=ds_uuid,
         recovery_point=rp)
 
-@app.route('/host/<int:host_id>/fs-data/disk-safe/<ds_uuid>/point/<int:rp_id>/path/<path_b64>')
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/recovery-points/<int:rp_id>/fs-data/<path_b64>')
 def host_agent_recovery_points_browse_data(host_id, ds_uuid, rp_id, path_b64):
     path = path_b64.decode('base64')
     host = R1softHost.query.get(host_id)
@@ -246,7 +246,7 @@ def host_agent_recovery_points_browse_data(host_id, ds_uuid, rp_id, path_b64):
             host_id=host.id, ds_uuid=ds_uuid, rp_id=rp_id, path_b64=path_join(path, e.filePath).encode('base64').rstrip()),
         entries=file_entries)
 
-@app.route('/host/<int:host_id>/restore/disk-safe/<ds_uuid>/point/<int:rp_id>', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/recovery-points/<int:rp_id>/submit-restore', methods=['POST'])
 def host_agent_recovery_points_restore(host_id, ds_uuid, rp_id):
     host = R1softHost.query.get(host_id)
     rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
@@ -261,7 +261,7 @@ def host_agent_recovery_points_restore(host_id, ds_uuid, rp_id):
         recovery_point=rp,
         restore_form=form)
 
-@app.route('/host/<int:host_id>/submit-restore/disk-safe/<ds_uuid>/point/<int:rp_id>', methods=['POST'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/recovery-points/<int:rp_id>/restore', methods=['POST'])
 def host_agent_recovery_points_restore_action(host_id, ds_uuid, rp_id):
     host = R1softHost.query.get(host_id)
     rp = host.conn.RecoveryPoints2.service.getRecoveryPointByID(ds_uuid, rp_id)
@@ -287,7 +287,7 @@ def host_agent_recovery_points_restore_action(host_id, ds_uuid, rp_id):
     task = host.conn.RecoveryPoints2.service.doFileRestore(rp, restore_opts)
     return redirect(url_for('task_details', host_id=host_id, task_uuid=task.id))
 
-@app.route('/host/<int:host_id>/task-history/')
+@app.route('/hosts/<int:host_id>/tasks/')
 def host_task_history(host_id):
     host = R1softHost.query.get(host_id)
     tasks = inflate_tasks(host,
@@ -302,19 +302,19 @@ def host_task_history(host_id):
         host=host,
         tasks=zip(tasks, agent_names))
 
-@app.route('/task-history/host/<int:host_id>/task/<task_uuid>/rerun', methods=['POST'])
+@app.route('/hosts/<int:host_id>/tasks/<task_uuid>/rerun', methods=['POST'])
 def host_task_history_rerun(host_id, task_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.TaskHistory.service.runTaskByTaskExecutionContextID(task_uuid)
     return redirect(url_for('host_task_history', host_id=host.id))
 
-@app.route('/task-history/host/<int:host_id>/task/<task_uuid>/cancel', methods=['POST'])
+@app.route('/hosts/<int:host_id>/tasks/<task_uuid>/cancel', methods=['POST'])
 def host_task_history_cancel(host_id, task_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.TaskHistory.service.cancelTaskByTaskExecutionContextID(task_uuid)
     return redirect(url_for('task_details', host_id=host.id, task_uuid=task_uuid))
 
-@app.route('/host/<int:host_id>/users/')
+@app.route('/hosts/<int:host_id>/users/')
 def host_users(host_id):
     host = R1softHost.query.get(host_id)
     users = host.conn.User.service.getUsers()
@@ -322,25 +322,25 @@ def host_users(host_id):
         host=host,
         users=users)
 
-@app.route('/users/host/<int:host_id>/user/<user_uuid>/disable')
+@app.route('/hosts/<int:host_id>/users/<user_uuid>/disable', methods=['POST'])
 def host_users_disable(host_id, user_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.User.service.updateUser() #switch off
     return redirect(url_for('host_users', host_id=host_id))
 
-@app.route('/users/host/<int:host_id>/user/<user_uuid>/enable')
+@app.route('/hosts/<int:host_id>/users/<user_uuid>/enable', methods=['POST'])
 def host_users_enable(host_id, user_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.User.service.updateUser() #switch on
     return redirect(url_for('host_users', host_id=host_id))
 
-@app.route('/users/host/<int:host_id>/user/<user_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/users/<user_uuid>/delete', methods=['DELETE'])
 def host_users_delete(host_id, user_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.User.service.deleteUserById(user_uuid)
     return redirect(url_for('host_users', host_id=host_id))
 
-@app.route('/host/<int:host_id>/configuration')
+@app.route('/hosts/<int:host_id>/configuration/')
 def host_configuration(host_id):
     host = R1softHost.query.get(host_id)
     cfg_svc = host.conn.Configuration.service
@@ -368,7 +368,7 @@ def host_configuration(host_id):
         host_config=config,
         config_form=config_form)
 
-@app.route('/host/<int:host_id>/api-proxy/<namespace>/<method>', methods=['POST'])
+@app.route('/hosts/<int:host_id>/api-proxy/<namespace>/<method>', methods=['POST'])
 def host_api_proxy(host_id, namespace, method):
     raise NotImplementedError()
 
@@ -388,12 +388,16 @@ def host_api_proxy(host_id, namespace, method):
         response['error'] = {'class': err.__class__.__name__, 'message': str(err)}
     return jsonify(response)
 
-@app.route('/host/<int:host_id>/agents/<agent_uuid>/')
+@app.route('/hosts/<int:host_id>/agents/<agent_uuid>/')
 def agent_details(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
     agent = host.conn.Agent.service.getAgentByID(agent_uuid)
     if agent.osType != 'UNKNOWN':
-        remote_opts = host.conn.Agent.service.getRemoteAgentOptions(agent.id)
+        try:
+            remote_opts = host.conn.Agent.service.getRemoteAgentOptions(agent.id)
+        except Exception as err:
+            app.logger.exception(err)
+            remote_opts = False
     else:
         remote_opts = False
     links = search_uuid_map(agent.hostname, agent.description)
@@ -403,7 +407,7 @@ def agent_details(host_id, agent_uuid):
         agent_opts=remote_opts,
         agent=agent)
 
-@app.route('/host/<int:host_id>/disksafes/<disksafe_uuid>/')
+@app.route('/hosts/<int:host_id>/disk-safes/<disksafe_uuid>/')
 def disksafe_details(host_id, disksafe_uuid):
     host = R1softHost.query.get(host_id)
     disksafe = host.conn.DiskSafe.service.getDiskSafeByID(disksafe_uuid)
@@ -413,7 +417,7 @@ def disksafe_details(host_id, disksafe_uuid):
         links=links,
         disksafe=disksafe)
 
-@app.route('/host/<int:host_id>/volumes/<volume_uuid>/')
+@app.route('/hosts/<int:host_id>/volumes/<volume_uuid>/')
 def volume_details(host_id, volume_uuid):
     host = R1softHost.query.get(host_id)
     volume = host.conn.Volume.service.getVolumeById(volume_uuid)
@@ -421,7 +425,7 @@ def volume_details(host_id, volume_uuid):
         host=host,
         volume=volume)
 
-@app.route('/host/<int:host_id>/policies/<policy_uuid>/')
+@app.route('/hosts/<int:host_id>/policies/<policy_uuid>/')
 def policy_details(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     policy = host.conn.Policy2.service.getPolicyById(policy_uuid)
@@ -442,7 +446,7 @@ def policy_details(host_id, policy_uuid):
         task_link=task_link,
         policy=policy)
 
-@app.route('/host/<int:host_id>/task-history/<task_uuid>/')
+@app.route('/hosts/<int:host_id>/tasks/<task_uuid>/')
 def task_details(host_id, task_uuid):
     host = R1softHost.query.get(host_id)
     task = inflate_task_logs(host, inflate_task_alerts(host,
@@ -464,7 +468,7 @@ def task_details(host_id, task_uuid):
 def policy_directory_collection():
     return render_template('policy_directory_collection.html')
 
-@app.route('/policy-directory/host/<int:host_id>/data')
+@app.route('/hosts/<int:host_id>/policy-directory-data/')
 def policy_directory_collection_data(host_id):
     host = R1softHost.query.get(host_id)
     policies = host.conn.Policy2.service.getPolicies()
