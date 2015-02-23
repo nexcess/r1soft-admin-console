@@ -40,7 +40,7 @@
                             {{ mk_form_button(url_for('host_policies_run', host_id=host.id, policy_uuid=policy.id),
                                     'Run', 'play', 'primary', show_text=False) }}
                             {{ mk_form_button(url_for('host_policies_disksafe_verify', host_id=host.id, policy_uuid=policy.id),
-                                    'Verify', 'play', 'success', show_text=False) }}
+                                    'Verify', 'check', 'success', show_text=False) }}
                             {% if policy.enabled %}
                             {{ mk_form_button(url_for('host_policies_disable', host_id=host.id, policy_uuid=policy.id),
                                     'Disable', 'circle', 'danger', show_text=False) }}
