@@ -49,7 +49,7 @@
                                     'Enable', 'circle', 'success', show_text=False) }}
                             {% endif %}
                             {{ mk_form_button(url_for('host_policies_delete', host_id=host.id, policy_uuid=policy.id),
-                                    'Delete', 'times', 'danger', show_text=False, submit_method='DELETE') }}
+                                    'Delete', 'times', 'danger', show_text=False) }}
                         </td>
                     </tr>
                 {% endfor %}

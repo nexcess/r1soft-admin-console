@@ -2,7 +2,6 @@
 {% do active_elements.append('#nav-e-host') %}
 {% do active_elements.append('#nav-li-host-%d' % host.id) %}
 {% from 'macros/buttons.html' import mk_form_button, mk_link_button %}
-{% from 'macros/buttons.html' import mk_link_button as action_button %}
 {% block title %}{{ host.hostname }}{% endblock %}
 {% block content %}
     <div class="row">

@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+{% from 'macros/alerts.html' import mk_alert %}
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -62,7 +63,7 @@
                             <a href="{{ url_for('policy_directory_collection') }}"><i class="fa fa-heartbeat icon-space-right"></i>Policy Directory</a>
                         </li>
                         <li id="nav-e-settings">
-                            <a href="#"><i class="fa fa-cog icon-space-right"></i>Settings</a>
+                            <a href="{{ url_for('settings_general') }}"><i class="fa fa-cog icon-space-right"></i>Settings</a>
                         </li>
                         <li id="nav-e-login">
                             {% if True %}
@@ -89,6 +90,13 @@
                         </h4>
                     </div>
                     <div id="message-area" class="panel-collapse collapse" role="tabpanel">
+                        {% with flash_messages = get_flashed_messages() %}
+                        {% if flash_messages %}
+                        {% for message in flash_messages %}
+                        {{ mk_alert('default', message) }}
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
                         {% block message_area %}{% endblock %}
                     </div>
                 </div>

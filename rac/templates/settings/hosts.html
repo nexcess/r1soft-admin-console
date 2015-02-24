@@ -1,0 +1,54 @@
+{% extends 'settings/base.html' %}
+{% do active_elements.append('#nav-se-settings-hosts') %}
+{% block title %}Hosts - {{ super() }}{% endblock %}
+{% block sub_header %}Hosts{% endblock %}
+{% block sub_content %}
+<div class="row">
+    <div class="pull-right">
+        {{ mk_link_button(url_for('settings_hosts_create'),
+                'Add New Host', 'plus', 'success', size='') }}
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="data-list-table" class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Active</th>
+                        <th>Username</th>
+                        <th>Hostname</th>
+                        <th>Port</th>
+                        <th>Use SSL?</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for host in hosts %}
+                    <tr id="{{ host.id }}">
+                        <td>{{ host.id }}</td>
+                        <td>{{ host.active|iconize }}</td>
+                        <td>{{ host.username }}</td>
+                        <td>{{ host.hostname }}</td>
+                        <td>{{ host.api_port }}</td>
+                        <td>{{ host.api_ssl|iconize }}</td>
+                        <td>
+                            {{ mk_link_button(url_for('settings_hosts_edit', host_id=host.id),
+                                    'Edit', 'pencil-square-o') }}
+                            {% if host.active %}
+                            {{ mk_form_button(url_for('settings_hosts_disable', host_id=host.id),
+                                    'Disable', 'circle', 'danger') }}
+                            {% else %}
+                            {{ mk_form_button(url_for('settings_hosts_enable', host_id=host.id),
+                                    'Enable', 'circle', 'success') }}
+                            {% endif %}
+                            {{ mk_form_button(url_for('settings_hosts_delete', host_id=host.id),
+                                    'Delete', 'times', 'danger') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -17,13 +17,14 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from rac import app
+from rac import app, db
 from rac.models import R1softHost, UUIDLink
 from rac.util import green_map, policy2agent, inflate_tasks, inflate_task_alerts, \
-    sort_tasks, inflate_task_logs, search_uuid_map, soap2native, split_by
-from rac.forms import HostConfigurationForm, RestoreForm
+    sort_tasks, inflate_task_logs, search_uuid_map, soap2native, split_by, \
+    inject_hide_password as hide_password
+from rac.forms import HostConfigurationForm, RestoreForm, R1softHostForm
 
-from flask import render_template, request, jsonify, url_for, redirect
+from flask import render_template, request, jsonify, url_for, redirect, flash
 import datetime
 from os.path import join as path_join
 import itertools
@@ -34,6 +35,83 @@ import itertools
 def dashboard():
     return render_template('dashboard.html',
         links=UUIDLink.query.all())
+
+@app.route('/settings/')
+def settings_general():
+    return render_template('settings/general.html')
+
+@app.route('/settings/policy-templates/')
+def settings_policy_templates():
+    return render_template('settings/policy_templates.html')
+
+@app.route('/settings/hosts/')
+def settings_hosts():
+    hosts = R1softHost.query.all()
+    return render_template('settings/hosts.html',
+        hosts=hosts)
+
+@app.route('/settings/hosts/create', methods=['GET', 'POST'])
+def settings_hosts_create():
+    form = R1softHostForm()
+    if request.method == 'POST' and form.validate():
+        host = R1softHost('', '', '')
+        form.populate_obj(host)
+        db.session.add(host)
+        db.session.commit()
+        flash('Host added: ' + host.hostname)
+        return redirect(url_for('settings_hosts'))
+    return render_template('settings/hosts/create.html',
+        form=form)
+
+@app.route('/settings/hosts/<int:host_id>/edit', methods=['GET', 'POST'])
+def settings_hosts_edit(host_id):
+    host = R1softHost.query.get(host_id)
+
+    if request.method == 'POST':
+        form = R1softHostForm()
+        if not form.validate():
+            return render_template('settings/hosts/edit.html',
+                form=form,
+                host=host)
+        original_pw = host.password
+        form.populate_obj(host)
+        if form.password.data == hide_password(original_pw):
+            host.password = original_pw
+        db.session.add(host)
+        db.session.commit()
+        flash('Host updated: ' + host.hostname)
+        return redirect(url_for('settings_hosts'))
+    else:
+        form = R1softHostForm(obj=host)
+        return render_template('settings/hosts/edit.html',
+            form=form,
+            host=host)
+
+@app.route('/settings/hosts/<int:host_id>/enable', methods=['POST'])
+def settings_hosts_enable(host_id):
+    host = R1softHost.query.get(host_id)
+    if not host.active:
+        host.active = True
+        db.session.add(host)
+        db.session.commit()
+    return redirect(url_for('settings_hosts'))
+
+@app.route('/settings/hosts/<int:host_id>/disable', methods=['POST'])
+def settings_hosts_disable(host_id):
+    host = R1softHost.query.get(host_id)
+    if host.active:
+        host.active = False
+        db.session.add(host)
+        db.session.commit()
+    return redirect(url_for('settings_hosts'))
+
+@app.route('/settings/hosts/<int:host_id>/delete', methods=['POST'])
+def settings_hosts_delete(host_id):
+    host = R1softHost.query.get(host_id)
+    UUIDLink.query.filter_by(host_id=host.id).delete()
+    db.session.delete(host)
+    db.session.commit()
+    return redirect(url_for('settings_hosts'))
 
 @app.route('/hosts/<int:host_id>/info')
 def host_details(host_id):
@@ -65,7 +143,7 @@ def host_volumes(host_id):
         host=host,
         volumes=host.conn.Volume.service.getVolumes())
 
-@app.route('/hosts/<int:host_id>/volumes/<volume_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/volumes/<volume_uuid>/delete', methods=['POST'])
 def host_volumes_delete(host_id, volume_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.Volume.service.deleteVolumeById(volume_uuid)
@@ -80,7 +158,7 @@ def host_agents(host_id):
         host=host,
         agents=zip(agents, links))
 
-@app.route('/hosts/<int:host_id>/agents/<agent_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/agents/<agent_uuid>/delete', methods=['POST'])
 def host_agents_delete(host_id, agent_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.Agent.service.deleteAgentById(agent_uuid)
@@ -124,7 +202,7 @@ def host_disksafes_attach(host_id, ds_uuid):
     host.conn.DiskSafe.service.attachDisksafe(disksafe)
     return redirect(url_for('host_disksafes', host_id=host.id))
 
-@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/disk-safes/<ds_uuid>/delete', methods=['POST'])
 def host_disksafes_delete(host_id, ds_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.DiskSafe.service.deleteDiskSafeById(ds_uuid)
@@ -163,7 +241,7 @@ def host_policies_disable(host_id, policy_uuid):
     host.conn.Policy2.service.disablePolicy(policy)
     return redirect(url_for('host_policies', host_id=host_id))
 
-@app.route('/hosts/<int:host_id>/policies/<policy_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/policies/<policy_uuid>/delete', methods=['POST'])
 def host_policies_delete(host_id, policy_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.Policy2.service.deletePolicyById(policy_uuid)
@@ -338,7 +416,7 @@ def host_users_enable(host_id, user_uuid):
     host.conn.User.service.updateUser() #switch on
     return redirect(url_for('host_users', host_id=host_id))
 
-@app.route('/hosts/<int:host_id>/users/<user_uuid>/delete', methods=['DELETE'])
+@app.route('/hosts/<int:host_id>/users/<user_uuid>/delete', methods=['POST'])
 def host_users_delete(host_id, user_uuid):
     host = R1softHost.query.get(host_id)
     host.conn.User.service.deleteUserById(user_uuid)

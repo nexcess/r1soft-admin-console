@@ -1,22 +1,26 @@
-{% macro mk_link_button(url, name, icon='question-circle', color='default', size='xs', show_text=True) %}
+{%- macro mk_button(name, type='submit', icon='question-circle', color='default', size='xs', show_text=True) -%}
+<button type="{{ type }}" class="btn{% if size %} btn-{{ size }}{% endif %}{% if size != 'xs' %} btn-{{ color }}{% else %} btn-default{% endif %}">
+    <i title="{{ name }}"
+            class="fa fa-{{ icon }} fa-lg{% if size == 'xs' %} text-{{ color }}{% endif %}{% if show_text %} icon-space-right{% endif %}"></i>
+    {%- if show_text -%}
+    {{ name }}
+    {%- endif -%}
+</button>
+{%- endmacro -%}
+
+{%- macro mk_link_button(url, name, icon='question-circle', color='default', size='xs', show_text=True) -%}
 <a class="btn{% if size != '' %} btn-{{ size }}{% endif %}{% if size != 'xs' %} btn-{{ color }}{% else %} btn-default{% endif %}" href="{{ url }}">
     <i title="{{ name }}"
             class="fa fa-{{ icon }} fa-lg{% if size == 'xs' %} text-{{ color }}{% endif %}{% if show_text %} icon-space-right{% endif %}"></i>
-    {% if show_text %}
+    {%- if show_text -%}
     {{ name }}
-    {% endif %}
+    {%- endif -%}
 </a>
-{% endmacro %}
+{%- endmacro -%}
 
-{% macro mk_form_button(url, name, icon='question-circle', color='default', size='xs', show_text=True, submit_method='POST') %}
-<form action="{{ url }}" method="{{ submit_method }}" class="rac-single-button-form"
+{%- macro mk_form_button(url, name, icon='question-circle', color='default', size='xs', show_text=True) -%}
+<form action="{{ url }}" method="POST" class="rac-single-button-form"
         title="{{ name }}">
-    <button type="submit" class="btn{% if size %} btn-{{ size }}{% endif %}{% if size != 'xs' %} btn-{{ color }}{% else %} btn-default{% endif %}">
-        <i title="{{ name }}"
-                class="fa fa-{{ icon }} fa-lg{% if size == 'xs' %} text-{{ color }}{% endif %}{% if show_text %} icon-space-right{% endif %}"></i>
-        {% if show_text %}
-        {{ name }}
-        {% endif %}
-    </button>
+    {{ mk_button(name, icon=icon, color=color, size=size, show_text=show_text) }}
 </form>
-{% endmacro %}
+{%- endmacro -%}

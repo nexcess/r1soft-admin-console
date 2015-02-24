@@ -1,0 +1,36 @@
+{% from 'macros/buttons.html' import mk_button %}
+{%- macro mk_form(url, form_obj,
+        submit_button=mk_button('Submit',
+            icon='floppy-o', size='', color='success')) -%}
+<form action="{{ url }}" method="POST">
+    <table class="table">
+        <colgroup>
+            <col width="50%">
+            <col width="50%">
+        </colgroup>
+        <tbody>
+            {%- for field in form_obj -%}
+            {%- if field.type not in ('CSRFTokenField', 'HiddenField') -%}
+            <tr id="field-{{ field.label.text }}">
+                <td>{{ field.label }}</td>
+                {%- if 'password' in field.label.text and field.data -%}
+                <td>{{ field(class='form-control', value=field.data|hide_password) }}</td>
+                {%- else -%}
+                <td>{{ field(class='form-control') }}</td>
+                {%- endif -%}
+            </tr>
+            {%- endif -%}
+            {%- endfor -%}
+        </tbody>
+    </table>
+    <div class="pull-right">
+        {{ submit_button }}
+    </div>
+    {%- for field in form_obj -%}
+    {%- if field.type == 'HiddenField' -%}
+    {{ field }}
+    {%- endif -%}
+    {%- endfor -%}
+    {{ form_obj.hidden_tag() }}
+</form>
+{%- endmacro -%}

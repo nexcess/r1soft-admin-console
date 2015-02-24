@@ -208,6 +208,13 @@ def inject_naturaltime(dt):
 def inject_naturaldelta(td):
     return naturaldelta(td)
 
+@app.template_filter('hide_password')
+def inject_hide_password(pw):
+    if len(pw) > 2:
+        return pw[0] + ('*' * len(pw[1:-1])) + pw[-1]
+    else:
+        return '*' * 12
+
 @app.template_filter('ms_to_datetime')
 def convert_ms_to_datetime(ms):
     return datetime.datetime.fromtimestamp(ms // 1000)
@@ -221,4 +228,4 @@ def convert_ms_to_timedelta(ms):
 @app.errorhandler(WebFault)
 @app.errorhandler(MethodNotFound)
 def handle_timeout(error):
-    return render_template('error.html', error=error), 500
+    return render_template('extra/error.html', error=error), 500

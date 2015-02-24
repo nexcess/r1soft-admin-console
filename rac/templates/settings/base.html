@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% do active_elements.append('#nav-e-settings') %}
+{% from 'macros/buttons.html' import mk_form_button, mk_link_button %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li id="nav-se-settings-general">
+                    <a href="{{ url_for('settings_general') }}">
+                        <span class="sidebar-label">General</span>
+                        <i class="fa fa-cogs fa-lg fa-fw pull-right"></i>
+                    </a>
+                </li>
+                <li id="nav-se-settings-hosts">
+                    <a href="{{ url_for('settings_hosts') }}">
+                        <span class="sidebar-label">Hosts</span>
+                        <i class="fa fa-server fa-lg fa-fw pull-right"></i>
+                    </a>
+                </li>
+                <li id="nav-se-settings-policy-templates">
+                    <a href="{{ url_for('settings_policy_templates') }}">
+                        <span class="sidebar-label">Policy Templates</span>
+                        <i class="fa fa-clipboard fa-lg fa-fw pull-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h1 class="page-header">
+                <strong>Settings</strong>
+                <small class="pull-right">
+                {% block sub_header %}{% endblock %}
+                </small>
+            </h1>
+            {% block sub_content %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}

@@ -51,7 +51,7 @@
                             {% endif %}
                         #}
                             {{ mk_form_button(url_for('host_users_delete', host_id=host.id, user_uuid=user.id),
-                                    'Delete', 'times', 'danger', submit_method='DELETE') }}
+                                    'Delete', 'times', 'danger') }}
                         </td>
                     </tr>
                 {% endfor %}

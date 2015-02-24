@@ -1,0 +1,17 @@
+{% extends 'settings/hosts.html' %}
+{% from 'macros/alerts.html' import handle_form_errors %}
+{% from 'macros/buttons.html' import mk_button %}
+{% from 'macros/forms.html' import mk_form %}
+{% block sub_header %}Add Host{% endblock %}
+{% block message_area %}
+{{ handle_form_errors(form) }}
+{% endblock %}
+{% block sub_content %}
+<div class="row">
+    <div class="col-md-12">
+        {{ mk_form(url_for('settings_hosts_create'),
+                form,
+                submit_button=mk_button('Add Host', icon='plus', size='', color='success')) }}
+    </div>
+</div>
+{% endblock %}

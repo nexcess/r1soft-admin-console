@@ -148,3 +148,7 @@ i.icon-space-left {
 .rac-single-button-form {
   display: inline;
 }
+
+#message-area-container {
+  z-index: 1001;
+}

@@ -7,14 +7,14 @@
     <div class="col-md-12 button-row">
         <div class="pull-right">
             {{ mk_form_button('#',
-                    'Save Configuration', 'floppy-o', 'success', size='', submit_method='POST') }}
+                    'Save Configuration', 'floppy-o', 'success', size='') }}
         </div>
         {% if host_config['maintenance_mode'] %}
         {{ mk_form_button('#',
-                'Disable Maintenance Mode', 'check', 'success', size='', submit_method='POST') }}
+                'Disable Maintenance Mode', 'check', 'success', size='') }}
         {% else %}
         {{ mk_form_button('#',
-                'Enable Maintenance Mode', 'times', 'danger', size='', submit_method='POST') }}
+                'Enable Maintenance Mode', 'times', 'danger', size='') }}
         {% endif %}
     </div>
 </div>

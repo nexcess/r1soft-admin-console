@@ -1,0 +1,16 @@
+{%- macro mk_alert(status, content) -%}
+<div class="alert alert-dismissable alert-{{ status }}" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <i class="fa fa-close" aria-hidden="true"></i>
+    </button>
+    {{ content|safe }}
+</div>
+{%- endmacro -%}
+
+{% macro handle_form_errors(form) -%}
+{%- for field in form.errors -%}
+    {%- for error in form.errors[field] -%}
+        {{ mk_alert('danger', ('<strong>%s:</strong> ' % field) + error) }}
+    {%- endfor -%}
+{%- endfor -%}
+{%- endmacro %}

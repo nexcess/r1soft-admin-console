@@ -45,7 +45,7 @@
                             {{ mk_form_button(url_for('host_disksafes_detach', host_id=host.id, ds_uuid=disksafe.id),
                                     'Detach', 'chain-broken') }}
                             {{ mk_form_button(url_for('host_disksafes_delete', host_id=host.id, ds_uuid=disksafe.id),
-                                    'Delete', 'times', 'danger', submit_method='DELETE') }}
+                                    'Delete', 'times', 'danger') }}
                         </td>
                     </tr>
                 {% endfor %}

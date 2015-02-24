@@ -19,11 +19,14 @@
 
 from rac.models import R1softHost, PolicyTemplate
 
-from wtforms_alchemy import ModelForm
+from wtforms_alchemy import model_form_factory
 from flask.ext.wtf import Form
 from wtforms import IntegerField, BooleanField, StringField, RadioField, SelectMultipleField
 from wtforms.validators import NumberRange, InputRequired
 import wtforms.widgets
+
+
+ModelForm = model_form_factory(Form)
 
 
 class MultiCheckboxField(SelectMultipleField):
