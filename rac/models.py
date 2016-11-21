@@ -156,13 +156,13 @@ class PolicyTemplate(db.Model):
 
     id                              = db.Column(db.Integer(), primary_key=True)
 
-    replication_frequency           = db.Column(db.Enum(*R1SOFT_FREQUENCY_TYPES), nullable=False)
+    replication_frequency           = db.Column(db.Enum(*R1SOFT_FREQUENCY_TYPES, name='rep_freq'), nullable=False)
     replication_frequency_values    = db.Column(db.String(255))
 
-    merge_frequency                 = db.Column(db.Enum(*R1SOFT_FREQUENCY_TYPES), nullable=False)
+    merge_frequency                 = db.Column(db.Enum(*R1SOFT_FREQUENCY_TYPES, name='merge_freq'), nullable=False)
     merge_frequency_values          = db.Column(db.String(255))
 
-    verification_frequency          = db.Column(db.Enum(*R1SOFT_FREQUENCY_TYPES), nullable=False)
+    verification_frequency          = db.Column(db.Enum(*R1SOFT_FREQUENCY_TYPES, name='verif_freq'), nullable=False)
     verification_frequncy_values    = db.Column(db.String(255))
 
     enabled                         = db.Column(db.Boolean(), nullable=False)
