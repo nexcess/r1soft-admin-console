@@ -210,10 +210,7 @@ def inject_naturaldelta(td):
 
 @app.template_filter('hide_password')
 def inject_hide_password(pw):
-    if len(pw) > 2:
-        return pw[0] + ('*' * len(pw[1:-1])) + pw[-1]
-    else:
-        return '*' * 12
+    return (pw[0] + ('*' * 10) + pw[-1]) if pw else ('*' * 12)
 
 @app.template_filter('ms_to_datetime')
 def convert_ms_to_datetime(ms):
