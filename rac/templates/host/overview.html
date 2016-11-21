@@ -17,15 +17,15 @@
                             Agents
                         </div>
                         <div class="col-md-2 text-center">
-                            <h2 class="text-primary">{{ policies|length }}</h2>
+                            <h2 class="text-primary">{{ obj_attr_filter(policies, 'enabled', True)|length }}</h2>
                             Policies
                         </div>
                         <div class="col-md-2 text-center">
-                            <h2 class="text-danger">{{ obj_attr_filter(policies, 'state', 'ERROR')|length }}</h2>
+                            <h2 class="text-danger">{{ obj_attr_filter(obj_attr_filter(policies, 'enabled', True), 'state', 'ERROR')|length }}</h2>
                             Failed
                         </div>
                         <div class="col-md-2 text-center">
-                            <h2 class="text-warning">{{ obj_attr_filter(policies, 'state', 'ALERT')|length }}</h2>
+                            <h2 class="text-warning">{{ obj_attr_filter(obj_attr_filter(policies, 'enabled', True), 'state', 'ALERT')|length }}</h2>
                             Warning
                         </div>
                         <div class="col-md-2 text-center">
