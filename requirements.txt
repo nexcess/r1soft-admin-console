@@ -10,7 +10,8 @@ itsdangerous==0.24
 Jinja2==2.7.3
 Mako==1.0.1
 MarkupSafe==0.23
-r1soft==0.1
+#r1soft==0.2
+git+ssh://git@github.com/nexcess/python-r1soft.git#master
 SQLAlchemy==0.9.8
 suds==0.4
 Werkzeug==0.10.1
