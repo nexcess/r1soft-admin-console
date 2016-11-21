@@ -71,7 +71,7 @@
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
             <h1 class="page-header">
-                <strong>{{ host.hostname }}</strong>
+                <strong>{{ host.hostname }}<a href="{{ host.external_url }}"><i class="fa fa-external-link icon-space-left"></i></a></strong>
                 <small class="pull-right">
                 {% block host_sub_header %}User: {{ host.username }}{% endblock %}
                 </small>
