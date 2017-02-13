@@ -18,14 +18,16 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import subprocess
+from urllib2 import URLError
+from ssl import SSLError
+
 from rac import app, db, manager
 from rac.models import R1softHost, UUIDLink
 from rac.util import green_map
 
 from sqlalchemy.exc import IntegrityError
 from r1soft.util import read_config
-from urllib2 import URLError
-from ssl import SSLError
 
 
 def create_link(host, agent, disksafe=None, policy=None):
